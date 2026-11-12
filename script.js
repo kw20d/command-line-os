@@ -1,3 +1,4 @@
+//
 let canvas = document.querySelector('#main-canvas');
 let c = canvas.getContext('2d');
 let input = document.querySelector('input');
