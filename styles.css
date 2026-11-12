@@ -1,0 +1,21 @@
+body {
+    margin: 0px;
+}
+
+#main-canvas {
+    margin: 0px;
+}
+
+#input{
+    position:absolute;
+    left:100px;
+    top:48px;
+    width:300px;
+    height:35px;
+    font-family:monospace;
+    font-size: 35px;
+    color: green;
+    background-color: rgb(44, 44, 44);
+    border: none;
+    outline: none;
+}
