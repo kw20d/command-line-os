@@ -13,11 +13,16 @@ let movePrompt = (line) => {
     input.style.top = num.toString() + 'px';
 };
 let printOnCanvas = () => {
+    let visibleRows = Math.floor(((canvas.height - 80) / 40) - 1);
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = 'black';
     c.fillRect(0,0,canvas.width,canvas.height);
     c.fillStyle = 'green';
-    
+
+    if(renderHistory.length > visibleRows)
+    {
+        renderHistory = renderHistory.slice(-visibleRows);
+    }
     let line = renderHistory.length * 40;
     for(let i = 0; i < renderHistory.length; i++)
     {
