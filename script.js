@@ -37,7 +37,9 @@ let canvasReset = () => {
 }
 
 let helpCommands = () => {
-    renderHistory.push('clear - resets the terminal  help - see commands');
+    let commandsList = ['clear - resets the terminal', 'help - see commands', 'echo - prints', 'whoami - tells you'];
+    for(let i = 0; i < commandsList.length; i++)
+        renderHistory.push(commandsList[i]);
 }
 
 //Setting the canvas size to the window
@@ -51,9 +53,7 @@ const commands = {
     'help':  () => helpCommands(),
     'clear': () => canvasReset(),
     'echo': () => renderHistory.push(input.value.trim().split(" ").slice(1)),
-    'whoami': () => {
-        renderHistory.push("Zixted's Fan");
-    },
+    'whoami': () => renderHistory.push("Zixted's Fan"),
 };
 let commandHistory = [];
 let k = 1;
