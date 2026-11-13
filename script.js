@@ -6,6 +6,7 @@ let c = canvas.getContext('2d');
 let input = document.querySelector('input');
 //Needed Variables Declaration
 let renderHistory = [];
+let historyIndex = 0;
 //Helper Functions
 let movePrompt = (line) => {
     c.fillText('>',40,  line + 80)
@@ -55,29 +56,27 @@ const commands = {
     'whoami': () => renderHistory.push("Zixted's Fan"),
 };
 let commandHistory = [];
-let k = 1;
 input.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        if (commandHistory.length === 0)
-            return;
-        if (typeof commandHistory[commandHistory.length - k] === "undefined")
-            return;
-        input.value = commandHistory[commandHistory.length - k];
-        k++;
+        event.preventDefault();    
+        if (historyIndex > 0)
+        {
+            historyIndex--;
+            input.value = commandHistory[historyIndex];
+        }
     }
     else if (event.key === 'ArrowDown') {
         event.preventDefault();
-        if(k <= 1)
-            {input.value = '';
-            return;}
-        k--;
-        if (commandHistory.length === 0)
-            return;
-        
-        if (typeof commandHistory[commandHistory.length - k] === "undefined")
-            return;
-        input.value = commandHistory[commandHistory.length - k];
+        if (historyIndex < commandHistory.length)
+        {
+            historyIndex++;
+            if(historyIndex == commandHistory.length)
+            {
+                input.value = '';
+                return;
+            }
+            input.value = commandHistory[historyIndex];
+        }
     }
      if(event.key === 'Enter')
     {
@@ -96,7 +95,7 @@ input.addEventListener('keydown', (event) => {
                 }
                 render();
                 commandHistory.push(input.value);
-                k = 1;
+                historyIndex = commandHistory.length;
         }
         input.value='';
     }
