@@ -1,13 +1,8 @@
-//Gets the canvas
 let canvas = document.querySelector('#main-canvas');
-//Gets its context
 let c = canvas.getContext('2d');
-//Gets the input
 let input = document.querySelector('input');
-//Needed Variables Declaration
 let renderHistory = [];
 let historyIndex = 0;
-//Helper Functions
 let movePrompt = (line) => {
     c.fillText('>',40,  line + 80)
     let num = 12 + line + 40;
@@ -42,10 +37,8 @@ let helpCommands = () => {
         renderHistory.push(commandsList[i]);
 }
 
-//Setting the canvas size to the window
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
-//Setting the starting style
 c.font = ('40px monospace');
  render();
 
