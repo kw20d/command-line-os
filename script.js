@@ -50,17 +50,7 @@ c.font = ('40px monospace');
 const commands = {
     'help':  () => helpCommands(),
     'clear': () => canvasReset(),
-    'echo': () => {
-        let words = '';
-        for(let p = 1; p < input.value.split(" ").length; p++)
-        {
-            if(p === 1)
-                words += input.value.split(" ")[p];
-            else
-                words += ' ' + input.value.split(" ")[p];
-        };
-        renderHistory.push(words)
-    },
+    'echo': () => renderHistory.push(input.value.trim().split(" ").slice(1)),
     'whoami': () => {
         renderHistory.push("Zixted's Fan");
     },
@@ -94,8 +84,9 @@ input.addEventListener('keydown', (event) => {
     {
         if(input.value != '')
         {
+                let parts = input.value.trim().split(" ");
                 renderHistory.push('> ' + input.value);
-                let command = input.value.split(" ")[0];
+                let command = parts[0];
                 if(Object.hasOwn(commands, command))
                 {
                     commands[command]();
