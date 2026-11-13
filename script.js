@@ -12,7 +12,7 @@ let movePrompt = (line) => {
     let num = 12 + line + 40;
     input.style.top = num.toString() + 'px';
 };
-let printOnCanvas = () => {
+let render = () => {
     let visibleRows = Math.floor(((canvas.height - 80) / 40) - 1);
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = 'black';
@@ -31,9 +31,8 @@ let printOnCanvas = () => {
     movePrompt(line);
 };
 
-let canvasReset = () => {
+let clearScreen = () => {
     renderHistory = [];
-    input.style.top = '48px';
 }
 
 let helpCommands = () => {
@@ -47,12 +46,12 @@ canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 //Setting the starting style
 c.font = ('40px monospace');
- printOnCanvas();
+ render();
 
 const commands = {
     'help':  () => helpCommands(),
-    'clear': () => canvasReset(),
-    'echo': () => renderHistory.push(input.value.trim().split(" ").slice(1)),
+    'clear': () => clearScreen(),
+    'echo': (txt) => renderHistory.push(txt.join(" ")),
     'whoami': () => renderHistory.push("Zixted's Fan"),
 };
 let commandHistory = [];
@@ -89,13 +88,13 @@ input.addEventListener('keydown', (event) => {
                 let command = parts[0];
                 if(Object.hasOwn(commands, command))
                 {
-                    commands[command]();
+                    commands[command](parts.slice(1));
                 }
                 else
                 {
                     renderHistory.push('command not found: ' + command);
                 }
-                printOnCanvas();
+                render();
                 commandHistory.push(input.value);
                 k = 1;
         }

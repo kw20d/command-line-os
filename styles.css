@@ -3,13 +3,13 @@ body {
 }
 
 #main-canvas {
+    display: block;
     margin: 0px;
 }
 
 #input{
     position:absolute;
     left:85px;
-    top:48px;
     width:300px;
     height:35px;
     font-family:monospace;
