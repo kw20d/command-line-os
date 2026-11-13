@@ -26,7 +26,7 @@ let printOnCanvas = () => {
     let line = renderHistory.length * 40;
     for(let i = 0; i < renderHistory.length; i++)
     {
-        c.fillText(renderHistory[i], 100, 80 + 40*i);
+        c.fillText(renderHistory[i], 40, 80 + 40*i);
     }
     movePrompt(line);
 };
