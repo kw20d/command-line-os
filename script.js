@@ -3,10 +3,10 @@ let c = canvas.getContext('2d');
 let input = document.querySelector('input');
 let renderHistory = [];
 let historyIndex = 0;
-let currentPath;
+let nowFolder;
 let movePrompt = (line) => {
-    if(currentPath.parent) c.fillText('~/' + currentPath.parent.value + '/' + currentPath.value + ' >',40,  line + 80)
-    else c.fillText('~/' + currentPath.value + ' >',40,  line + 80)
+    if(nowFolder.parent) c.fillText('~/' + nowFolder.parent.value + '/' + nowFolder.value + ' >',40,  line + 80)
+    else c.fillText('~/' + nowFolder.value + ' >',40,  line + 80)
     let num = 12 + line + 40;
     input.style.top = num.toString() + 'px';
 };
@@ -15,28 +15,26 @@ class folderNode{
     constructor(value){
         this.parent = null;
         this.value = value;
-        this.type = null;
-        this.left = null;
-        this.right = null;
+        this.children = [];
     }
 };
 
-let addItem = (tree, parent, value, type, side) => {
+let addItem = (tree, parent, value, type) => {
     if(parent && parent.type === 'file')
         return
     let node = new tree(value);
     node.parent = parent;
     node.type = type;
     if(parent)
-        parent[side] = node;
+        parent.children.push(node);
     return node;
 }
 
 
-let root = addItem(folderNode, null, 'root', 'folder', null);
-let folder1 = addItem(folderNode, root, 'folder1', 'folder', 'left');
-let folder2 = addItem(folderNode, root, 'folder2', 'folder', 'right');
-let file1 = addItem(folderNode, folder1, 'file1', 'file', 'left');
+let root = addItem(folderNode, null, 'root', 'folder');
+let folder1 = addItem(folderNode, root, 'folder1', 'folder');
+let folder2 = addItem(folderNode, root, 'folder2', 'folder');
+let file1 = addItem(folderNode, folder1, 'file1', 'file');
 
 let render = () => {
     let visibleRows = Math.floor(((canvas.height - 80) / 40) - 1);
@@ -57,36 +55,49 @@ let render = () => {
     movePrompt(line);
 };
 
-let currentFolder = (node) => {
+let currentPath = (node) => {
     let path = '';
-    if(node.left)
-        if(node.left.type === 'file') path += '   ' + node.left.value +'*';
-        else path += '   ' + node.left.value;
-    if(node.right)
-        if(node.right.type === 'file') path += '   ' + node.right.value +'*';
-        else path += '   ' + node.right.value;
+    for(let i = 0; i < node.children.length; i++)
+    {
+        if(node.children[i].type === 'file') path += '   ' + node.children[i].value +'*';
+        else path += '   ' + node.children[i].value;
+    }
     if(path === '')
         path = 'empty folder';
     return path;
 };
 
 let listContent = () => {
-    renderHistory.push(currentFolder(currentPath));
+    renderHistory.push(currentPath(nowFolder));
 }
 
 let changeDir = txt => {
+    if(!txt)
+    {
+        renderHistory.push('enter folder name');
+        return;
+    }
     if(txt === '..')
     {
-        if(currentPath.parent)
-            currentPath = currentPath.parent;
+        if(nowFolder.parent)
+        {
+            nowFolder = nowFolder.parent;
+            return;
+        }
         else
             return;
     }
-    else if(currentPath.left && txt === currentPath.left.value && currentPath.left.type === 'folder') 
-        currentPath = currentPath.left;
-    else if(currentPath.right && txt === currentPath.right.value && currentPath.right.type === 'folder') 
-        currentPath = currentPath.right;
-    else
+    let found = false;  
+    for(let i = 0; i < nowFolder.children.length; i++)
+    {
+        if(txt === nowFolder.children[i].value && nowFolder.children[i].type === 'folder') 
+        {
+            nowFolder = nowFolder.children[i];
+            found = true;
+            break;
+        }
+    }
+    if(found === false)
         renderHistory.push('no such folder');
 }
 
@@ -103,7 +114,7 @@ let helpCommands = () => {
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 c.font = ('40px monospace');
-currentPath = root;
+nowFolder = root;
 render();
 
 const commands = {
