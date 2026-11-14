@@ -128,7 +128,7 @@ const commands = {
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp') {
-        event.preventDefault();    
+        event.preventDefault();
         if (historyIndex > 0)
         {
             historyIndex--;
