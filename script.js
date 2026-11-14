@@ -30,7 +30,6 @@ let addItem = (tree, parent, value, type) => {
     return node;
 }
 
-
 let root = addItem(folderNode, null, 'root', 'folder');
 let folder1 = addItem(folderNode, root, 'folder1', 'folder');
 let folder2 = addItem(folderNode, root, 'folder2', 'folder');
@@ -55,7 +54,7 @@ let render = () => {
     movePrompt(line);
 };
 
-let currentPath = (node) => {
+let listChildren = (node) => {
     let path = '';
     for(let i = 0; i < node.children.length; i++)
     {
@@ -68,14 +67,13 @@ let currentPath = (node) => {
 };
 
 let listContent = () => {
-    renderHistory.push(currentPath(nowFolder));
+    renderHistory.push(listChildren(nowFolder));
 }
 
 let changeDir = txt => {
     if(!txt)
     {
-        renderHistory.push('enter folder name');
-        return;
+        throw new Error('enter folder name');
     }
     if(txt === '..')
     {
@@ -84,8 +82,6 @@ let changeDir = txt => {
             nowFolder = nowFolder.parent;
             return;
         }
-        else
-            return;
     }
     let found = false;  
     for(let i = 0; i < nowFolder.children.length; i++)
@@ -98,7 +94,7 @@ let changeDir = txt => {
         }
     }
     if(found === false)
-        renderHistory.push('no such folder');
+        throw new Error('no such folder');
 }
 
 let clearScreen = () => {
@@ -106,7 +102,11 @@ let clearScreen = () => {
 }
 
 let helpCommands = () => {
-    let commandsList = ['clear - resets the terminal', 'help - see commands', 'echo - prints', 'whoami - tells you'];
+    let commandsList = ['clear - resets the terminal', 
+    'help - see commands', 
+    'echo - prints', 'whoami - tells you',
+    'ls - listing files', 
+    'cd - changes the working directory'];
     for(let i = 0; i < commandsList.length; i++)
         renderHistory.push(commandsList[i]);
 }
@@ -155,13 +155,13 @@ input.addEventListener('keydown', (event) => {
                 let parts = input.value.trim().split(" ");
                 renderHistory.push('> ' + input.value);
                 let command = parts[0];
-                if(Object.hasOwn(commands, command))
-                {
+                try {
+                    if(!Object.hasOwn(commands, command))
+                        throw new Error('command not found: ' + command);
                     commands[command](parts.slice(1));
-                }
-                else
-                {
-                    renderHistory.push('command not found: ' + command);
+                } catch (err) {
+                    renderHistory.push('error: ' + err.message);
+                    console.error(err);
                 }
                 render();
 
