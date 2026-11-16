@@ -7,7 +7,10 @@ let nowFolder;
 let cursorOn = true;
 let isTyping = false;
 let typingTimeout;
-let movePrompt = (line, nodePassed) => {
+let maxWidth;
+let maxChars;
+
+let pathToText = (nodePassed) => {
     let path = [];
     let node = nodePassed;
     while(node && node !== root)
@@ -15,7 +18,12 @@ let movePrompt = (line, nodePassed) => {
         path.unshift(node.value);
         node = node.parent;
     }
-    let prompt = '~/' + path.join('/') + ' >';
+    return '~/' + path.join('/') + ' >';;
+}
+
+let movePrompt = (line, nodePassed) => {
+    let node = nodePassed;
+    let prompt = pathToText(node);
     c.fillText(prompt, 40,  line + 80)
     let num = 12 + line + 40;
     let leftPos = (50 + c.measureText(prompt).width + 10);
@@ -32,7 +40,7 @@ class folderNode{
     }
 };
 
-let addItem = (tree, parent, value, type) => {
+let addItem = (tree, parent, value, type, content) => {
     if(parent && parent.type === 'file')
         return
     let node = new tree(value);
@@ -41,18 +49,65 @@ let addItem = (tree, parent, value, type) => {
     if(parent)
         parent.children.push(node);
     if(node.type === 'file')
-        node.content = null;
+        node.content = content;
     return node;
 }
 
 let root = addItem(folderNode, null, 'root', 'folder');
 let projects = addItem(folderNode, root, 'projects', 'folder');
-let prjct1 = addItem(folderNode, projects, 'ascii-camera', 'file');
-let prjct2 = addItem(folderNode, projects, 'neverdolist', 'file');
-let prjct3 = addItem(folderNode, projects, 'zoogle', 'file');
+let prjct1 = addItem(folderNode, projects, 'ascii-camera', 'file',
+    "Real-time webcam to ASCII art in the browser.\nType 'camera' to see the demo.");
+let prjct2 = addItem(folderNode, projects, 'neverdolist', 'file', 
+    "A small to-do app with an animated logo.\nType 'neverdolist' to see the demo.");
+let prjct3 = addItem(folderNode, projects, 'zoogle', 'file',
+    "Zoogle parody page with Easter eggs.\nType 'zoogle' to see the demo.");
 let about = addItem(folderNode, root, 'about', 'folder');
-let abt1 = addItem(folderNode, about, 'bio', 'file');
-let abt2 = addItem(folderNode, about, 'contact', 'file');
+let abt1 = addItem(folderNode, about, 'bio', 'file',
+    "CS student and motion designer from Algeria.\nAlso a guy trying to be COOL online.");
+let abt2 = addItem(folderNode, about, 'contact', 'file',
+    "zix9ted on all platforms");
+
+let wrapText = (text) => {
+    let lines = text.split('\n');
+    let result = [];
+    for(let i = 0; i < lines.length; i++)
+    {
+        let words = lines[i].split(' ');
+        let currentLine = "";
+        let wrappedLines = [];
+        for(let j = 0; j < words.length; j++)
+        {
+            let word = words[j];
+            let testLine = "";
+
+        if(currentLine === "")
+            testLine = word;
+        else
+            testLine = currentLine + " " + word;
+            if(c.measureText(testLine).width <= maxWidth)
+                currentLine = testLine;
+            else {
+                if(currentLine !== "")
+                    wrappedLines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        if(currentLine !== "")
+            wrappedLines.push(currentLine);
+        for(let k = 0; k < wrappedLines.length; k++) {
+            result.push(wrappedLines[k]);
+        }
+    }
+    return result;
+}
+
+let addToHistory = (text) => {
+    let wrappedLines = wrapText(text);
+
+    for(let i = 0; i < wrappedLines.length; i++) {
+        renderHistory.push(wrappedLines[i]);
+    }
+};
 
 let render = () => {
     let visibleRows = Math.floor(((canvas.height - 80) / 40) - 1);
@@ -90,7 +145,7 @@ let listChildren = (node) => {
 };
 
 let listContent = () => {
-    renderHistory.push(listChildren(nowFolder));
+    addToHistory(listChildren(nowFolder));
 }
 
 let changeDir = txt => {
@@ -127,14 +182,8 @@ let clearScreen = () => {
 }
 
 let helpCommands = () => {
-    let commandsList = ['clear - resets the terminal', 
-    'help - see commands', 
-    'echo - prints', 'whoami - tells you',
-    'ls - listing files', 
-    'cd - changes the working directory',
-    'cat - file content'];
-    for(let i = 0; i < commandsList.length; i++)
-        renderHistory.push(commandsList[i]);
+    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content'
+    addToHistory(commandsList);
 }
 
 let fileContent = (name, node) => {
@@ -144,7 +193,7 @@ let fileContent = (name, node) => {
     {
         if(node.children[i].value === name && node.children[i].type === 'file')
         {
-            renderHistory.push(node.children[i].content);
+            addToHistory(node.children[i].content);
             return;
         }
     }
@@ -154,6 +203,8 @@ let fileContent = (name, node) => {
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 c.font = ('40px monospace');
+maxWidth = canvas.width - 40;
+maxChars = Math.floor(maxWidth / c.measureText('M').width);
 nowFolder = root;
 render();
 
@@ -168,11 +219,14 @@ setInterval(() => {
 const commands = {
     'help':  () => helpCommands(),
     'clear': () => clearScreen(),
-    'echo': (txt) => renderHistory.push(txt.join(" ")),
-    'whoami': () => renderHistory.push("Zixted's Fan"),
+    'echo': (txt) => addToHistory(txt.join(" ")),
+    'whoami': () => addToHistory("Zixted's Fan"),
     'ls': () => listContent(),
     'cd': (txt) => changeDir(txt[0]),
     'cat': (txt) => fileContent(txt[0], nowFolder),
+    'camera': () => window.open("https://zascii-camera.netlify.app/", "ascii-camera"),
+    'zoogle': () => window.open("https://zoogleit.netlify.app/", "zoogle"),
+    'neverdolist': () => window.open("https://neverdolist.netlify.app/", "neverdolist"),
 };
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
@@ -205,14 +259,14 @@ input.addEventListener('keydown', (event) => {
         if(input.value != '')
         {
                 let parts = input.value.trim().split(" ");
-                renderHistory.push('> ' + input.value);
+                addToHistory(pathToText(nowFolder) + " " + input.value);
                 let command = parts[0];
                 try {
                     if(!Object.hasOwn(commands, command))
                         throw new Error('command not found: ' + command);
                     commands[command](parts.slice(1));
                 } catch (err) {
-                    renderHistory.push('error: ' + err.message);
+                    addToHistory('error: ' + err.message);
                     console.error(err);
                 }
                 commandHistory.push(parts.join(' '));
@@ -232,7 +286,7 @@ input.addEventListener('input', () => {
 
     typingTimeout = setTimeout(() => {
         isTyping = false;
-        cursorOn = false;
+        cursorOn = true;
         render();
     }, 600);
 });
