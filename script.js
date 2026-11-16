@@ -36,7 +36,7 @@ let pathToText = (nodePassed) => {
 
 let movePrompt = (line, nodePassed) => {
     let node = nodePassed;
-    let prompt = 'visitor@zixos: ~/' + pathToText(node) + '$';
+    let prompt = 'visitor@zixos: ~/' + pathToText(node) + ' $';
     c.fillText(prompt, 40,  line + 80)
     let num = 12 + line + 40;
     let leftPos = (50 + c.measureText(prompt).width + 10);
@@ -71,24 +71,24 @@ let addItem = (tree, parent, value, type, content, link) => {
 }
 
 let root = addItem(folderNode, null, 'root', 'folder');
-let projects = addItem(folderNode, root, 'projects/', 'folder');
+let projects = addItem(folderNode, root, 'projects', 'folder');
 let prjct1 = addItem(folderNode, projects, 'ascii-camera.app', 'file',
     "Real-time webcam to ASCII art in the browser.\nType 'open ascii-camera.app' to see the demo.", "https://zascii-camera.netlify.app/");
 let prjct2 = addItem(folderNode, projects, 'neverdolist.app', 'file', 
     "A small to-do app with an animated logo.\nType 'open neverdolist.app' to see the demo.", "https://neverdolist.netlify.app/");
 let prjct3 = addItem(folderNode, projects, 'zoogle.app', 'file',
     "Zoogle parody page with Easter eggs.\nType 'open zoogle.app' to see the demo.", "https://zoogleit.netlify.app/");
-let about = addItem(folderNode, root, 'about/', 'folder');
+let about = addItem(folderNode, root, 'about', 'folder');
 let abt1 = addItem(folderNode, about, 'bio.txt', 'file',
     "CS student and motion designer from Algeria.\nAlso a guy trying to be COOL online.");
 let abt2 = addItem(folderNode, about, 'contact.txt', 'file',
     "github - kw20d\nmotion instagram & youtube- zix9ted\nphotography insta - zix9cam\nmail - zixcnct@gmail.com");
-let gallery = addItem(folderNode, root, 'motion/', 'folder');
-let vid1 = addItem(folderNode, gallery, 'devil-9-5.mp4', 'file',"Type open <name> to see" , "https://www.instagram.com/p/DdeVjINoV9V/");
-let vid2 = addItem(folderNode, gallery, 'my-life-in-3d.mp4', 'file',"Type open <name> to see" , "https://www.instagram.com/p/DYNGmdUx4qj/");
-let vid3 = addItem(folderNode, gallery, 'oh-no-AI.mp4', 'file',"Type open <name> to see" , "https://www.instagram.com/p/DWt9sgto-LP/");
-let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4',"Type open <name> to see" , 'file', "https://www.instagram.com/p/DXKR4xGI-kV/");
-let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4',"Type open <name> to see" , 'file', "https://www.instagram.com/p/DXcVHmGRTEy/");
+let gallery = addItem(folderNode, root, 'motion', 'folder');
+let vid1 = addItem(folderNode, gallery, 'devil-9-5.mp4', 'file',"Type open devil-9-5.mp4 to see" , "https://www.instagram.com/p/DdeVjINoV9V/");
+let vid2 = addItem(folderNode, gallery, 'my-life-in-3d.mp4', 'file',"Type open my-life-in-3d.mp4 to see" , "https://www.instagram.com/p/DYNGmdUx4qj/");
+let vid3 = addItem(folderNode, gallery, 'oh-no-AI.mp4', 'file',"Type open oh-no-AI.mp4 to see" , "https://www.instagram.com/p/DWt9sgto-LP/");
+let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4', 'file',"Type open endless-hobbies.mp4 to see" , "https://www.instagram.com/p/DXKR4xGI-kV/");
+let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4', 'file' ,"Type open blender-journey.mp4 to see", "https://www.instagram.com/p/DXcVHmGRTEy/");
 
 let wrapText = (text) => {
     let lines = text.split('\n');
@@ -162,7 +162,7 @@ let listChildren = (node) => {
     for(let i = 0; i < node.children.length; i++)
     {
         if(node.children[i].type === 'file') path += '   ' + node.children[i].value +'*';
-        else path += '   ' + node.children[i].value;
+        else path += '   ' + node.children[i].value + '/';
     }
     if(path === '')
         path = 'empty folder';
@@ -207,7 +207,7 @@ let clearScreen = () => {
 }
 
 let helpCommands = () => {
-    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content\ncolor - change text color\npwd - display the current directory\nresume - check my resume';
+    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content\ncolor - change text color\npwd - display the current directory\nresume - check my resume\nopen-opens the file attached url';
     addToHistory(commandsList);
 }
 
@@ -241,7 +241,7 @@ let urlOpen = (name, node) => {
 
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
-c.font = ('40px VT323');
+c.font = ('40px VT323, monospace');
 maxWidth = canvas.width - 80;
 maxChars = Math.floor(maxWidth / c.measureText('M').width);
 nowFolder = root;
@@ -267,7 +267,10 @@ const commands = {
     if (!text[0])
         throw new Error('enter a color');
     if(text[0] === 'default')
+    {
        color = '#008F46';
+        return;
+    }
     if (!CSS.supports('color', text[0]))
         throw new Error('invalid color');
 
@@ -285,6 +288,7 @@ const commands = {
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp') {
+        audioType.currentTime = 0;
         audioType.play();
         event.preventDefault();
         if (historyIndex > 0)
@@ -296,6 +300,7 @@ input.addEventListener('keydown', (event) => {
     }
     else if (event.key === 'ArrowDown') {
         event.preventDefault();
+        audioType.currentTime = 0;
         audioType.play();
         if (historyIndex < commandHistory.length)
         {
@@ -316,7 +321,7 @@ input.addEventListener('keydown', (event) => {
         if(input.value.trim() !== '')
         {
                 let parts = input.value.trim().split(" ");
-                addToHistory('visitor@zixos: ~/' + pathToText(nowFolder) + '$' + " " + input.value);
+                addToHistory('visitor@zixos: ~/' + pathToText(nowFolder) + ' $ '+ input.value);
                 let command = parts[0];
                 try {
                     if(!Object.hasOwn(commands, command))
