@@ -1,10 +1,8 @@
-# ZIX-OS
+![ZIX-OS](intro.gif)
 
 A command-line "operating system" that doubles as my portfolio. Type commands to explore my projects, motion work and contact info.
 
-**Live demo:** <your Netlify link>
-
-![ZIX-OS](intro.gif)
+**Live demo:** <[ZIX-OS](https://kw20d.github.io/command-line-os/)>
 
 ## Try it
 `help` · `ls` · `cd projects` · `cat bio.txt` · `open ascii-camera.app` · `color cyan`
