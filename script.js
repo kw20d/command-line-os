@@ -73,11 +73,11 @@ let addItem = (tree, parent, value, type, content, link) => {
 let root = addItem(folderNode, null, 'root', 'folder');
 let projects = addItem(folderNode, root, 'projects/', 'folder');
 let prjct1 = addItem(folderNode, projects, 'ascii-camera.app', 'file',
-    "Real-time webcam to ASCII art in the browser.\nType 'open camera' to see the demo.", "https://zascii-camera.netlify.app/");
+    "Real-time webcam to ASCII art in the browser.\nType 'open ascii-camera.app' to see the demo.", "https://zascii-camera.netlify.app/");
 let prjct2 = addItem(folderNode, projects, 'neverdolist.app', 'file', 
-    "A small to-do app with an animated logo.\nType 'open neverdolist' to see the demo.", "https://neverdolist.netlify.app/");
+    "A small to-do app with an animated logo.\nType 'open neverdolist.app' to see the demo.", "https://neverdolist.netlify.app/");
 let prjct3 = addItem(folderNode, projects, 'zoogle.app', 'file',
-    "Zoogle parody page with Easter eggs.\nType 'open zoogle' to see the demo.", "https://zoogleit.netlify.app/");
+    "Zoogle parody page with Easter eggs.\nType 'open zoogle.app' to see the demo.", "https://zoogleit.netlify.app/");
 let about = addItem(folderNode, root, 'about/', 'folder');
 let abt1 = addItem(folderNode, about, 'bio.txt', 'file',
     "CS student and motion designer from Algeria.\nAlso a guy trying to be COOL online.");
