@@ -184,7 +184,7 @@ let clearScreen = () => {
 }
 
 let helpCommands = () => {
-    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content'
+    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content\ncolor - change text color'
     addToHistory(commandsList);
 }
 
