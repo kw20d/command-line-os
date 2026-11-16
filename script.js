@@ -9,6 +9,7 @@ let isTyping = false;
 let typingTimeout;
 let maxWidth;
 let maxChars;
+let color = 'green';
 
 let pathToText = (nodePassed) => {
     let path = [];
@@ -114,7 +115,7 @@ let render = () => {
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = 'black';
     c.fillRect(0,0,canvas.width,canvas.height);
-    c.fillStyle = 'green';
+    c.fillStyle = color;
     if(renderHistory.length > visibleRows)
     {
         renderHistory = renderHistory.slice(-visibleRows);
@@ -124,6 +125,7 @@ let render = () => {
     {
         c.fillText(renderHistory[i], 40, 80 + 40*i);
     }
+    input.style.color = color;
     let L = movePrompt(line, nowFolder);
     if(cursorOn)
     {
@@ -227,6 +229,7 @@ const commands = {
     'camera': () => window.open("https://zascii-camera.netlify.app/", "ascii-camera"),
     'zoogle': () => window.open("https://zoogleit.netlify.app/", "zoogle"),
     'neverdolist': () => window.open("https://neverdolist.netlify.app/", "neverdolist"),
+    'color': (text) => color = text[0],
 };
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
