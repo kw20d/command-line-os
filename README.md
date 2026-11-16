@@ -25,7 +25,7 @@ A command-line "operating system" that doubles as my portfolio. Type commands to
 - Intro animation and sound effects
 
 ## Credits
-Font: VT323 (SIL Open Font License). Intro animation made in After Effects. <add the source of the sound effects if they're not your own>
+Font: VT323 (SIL Open Font License). Intro animation made in After Effects.
 
 ## Roadmap
 Games running inside the terminal, mobile layout, more commands.
