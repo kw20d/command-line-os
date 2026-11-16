@@ -1,3 +1,13 @@
+const introContainer = document.querySelector('#intro');
+const logoVideo = document.querySelector('#logo-intro');
+
+logoVideo.addEventListener('ended', () => {
+    introContainer.classList.add('ended');
+    setTimeout(() => {
+        introContainer.remove();
+    }, 700);
+});
+
 let canvas = document.querySelector('#main-canvas');
 let c = canvas.getContext('2d');
 let input = document.querySelector('input');
@@ -9,7 +19,9 @@ let isTyping = false;
 let typingTimeout;
 let maxWidth;
 let maxChars;
-let color = 'green';
+let color = '#008F46';
+const audioEnter = new Audio('sfx-re.wav');
+const audioType = new Audio('sfx-add.wav');
 
 let pathToText = (nodePassed) => {
     let path = [];
@@ -19,15 +31,16 @@ let pathToText = (nodePassed) => {
         path.unshift(node.value);
         node = node.parent;
     }
-    return '~/' + path.join('/') + ' >';;
+    return path.join('/')
 }
 
 let movePrompt = (line, nodePassed) => {
     let node = nodePassed;
-    let prompt = pathToText(node);
+    let prompt = 'visitor@zixos: ~/' + pathToText(node) + '$';
     c.fillText(prompt, 40,  line + 80)
     let num = 12 + line + 40;
     let leftPos = (50 + c.measureText(prompt).width + 10);
+    input.style.width = (canvas.width - leftPos - 40) + 'px';
     input.style.top = num.toString() + 'px';
     input.style.left = leftPos + 'px';
     return leftPos;
@@ -41,7 +54,7 @@ class folderNode{
     }
 };
 
-let addItem = (tree, parent, value, type, content) => {
+let addItem = (tree, parent, value, type, content, link) => {
     if(parent && parent.type === 'file')
         return
     let node = new tree(value);
@@ -50,23 +63,32 @@ let addItem = (tree, parent, value, type, content) => {
     if(parent)
         parent.children.push(node);
     if(node.type === 'file')
+    {
         node.content = content;
+        node.url = link;
+    }
     return node;
 }
 
 let root = addItem(folderNode, null, 'root', 'folder');
-let projects = addItem(folderNode, root, 'projects', 'folder');
-let prjct1 = addItem(folderNode, projects, 'ascii-camera', 'file',
-    "Real-time webcam to ASCII art in the browser.\nType 'camera' to see the demo.");
-let prjct2 = addItem(folderNode, projects, 'neverdolist', 'file', 
-    "A small to-do app with an animated logo.\nType 'neverdolist' to see the demo.");
-let prjct3 = addItem(folderNode, projects, 'zoogle', 'file',
-    "Zoogle parody page with Easter eggs.\nType 'zoogle' to see the demo.");
-let about = addItem(folderNode, root, 'about', 'folder');
-let abt1 = addItem(folderNode, about, 'bio', 'file',
+let projects = addItem(folderNode, root, 'projects/', 'folder');
+let prjct1 = addItem(folderNode, projects, 'ascii-camera.app', 'file',
+    "Real-time webcam to ASCII art in the browser.\nType 'open camera' to see the demo.", "https://zascii-camera.netlify.app/");
+let prjct2 = addItem(folderNode, projects, 'neverdolist.app', 'file', 
+    "A small to-do app with an animated logo.\nType 'open neverdolist' to see the demo.", "https://neverdolist.netlify.app/");
+let prjct3 = addItem(folderNode, projects, 'zoogle.app', 'file',
+    "Zoogle parody page with Easter eggs.\nType 'open zoogle' to see the demo.", "https://zoogleit.netlify.app/");
+let about = addItem(folderNode, root, 'about/', 'folder');
+let abt1 = addItem(folderNode, about, 'bio.txt', 'file',
     "CS student and motion designer from Algeria.\nAlso a guy trying to be COOL online.");
-let abt2 = addItem(folderNode, about, 'contact', 'file',
-    "zix9ted on all platforms");
+let abt2 = addItem(folderNode, about, 'contact.txt', 'file',
+    "github - kw20d\nmotion instagram & youtube- zix9ted\nphotography insta - zix9cam\nmail - zixcnct@gmail.com");
+let gallery = addItem(folderNode, root, 'motion/', 'folder');
+let vid1 = addItem(folderNode, gallery, 'devil-9-5.mp4', 'file',"Type open <name> to see" , "https://www.instagram.com/p/DdeVjINoV9V/");
+let vid2 = addItem(folderNode, gallery, 'my-life-in-3d.mp4', 'file',"Type open <name> to see" , "https://www.instagram.com/p/DYNGmdUx4qj/");
+let vid3 = addItem(folderNode, gallery, 'oh-no-AI.mp4', 'file',"Type open <name> to see" , "https://www.instagram.com/p/DWt9sgto-LP/");
+let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4',"Type open <name> to see" , 'file', "https://www.instagram.com/p/DXKR4xGI-kV/");
+let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4',"Type open <name> to see" , 'file', "https://www.instagram.com/p/DXcVHmGRTEy/");
 
 let wrapText = (text) => {
     let lines = text.split('\n');
@@ -116,14 +138,15 @@ let render = () => {
     c.fillStyle = 'black';
     c.fillRect(0,0,canvas.width,canvas.height);
     c.fillStyle = color;
+    let visibleHistory = renderHistory;
     if(renderHistory.length > visibleRows)
     {
-        renderHistory = renderHistory.slice(-visibleRows);
+        visibleHistory = renderHistory.slice(-visibleRows);
     }
-    let line = renderHistory.length * 40;
-    for(let i = 0; i < renderHistory.length; i++)
+    let line = visibleHistory.length * 40;
+    for(let i = 0; i < visibleHistory.length; i++)
     {
-        c.fillText(renderHistory[i], 40, 80 + 40*i);
+        c.fillText(visibleHistory[i], 40, 80 + 40*i);
     }
     input.style.color = color;
     let L = movePrompt(line, nowFolder);
@@ -184,7 +207,7 @@ let clearScreen = () => {
 }
 
 let helpCommands = () => {
-    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content\ncolor - change text color'
+    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content\ncolor - change text color\npwd - display the current directory\nresume - check my resume';
     addToHistory(commandsList);
 }
 
@@ -202,10 +225,24 @@ let fileContent = (name, node) => {
     throw new Error('no such file');
 }
 
+let urlOpen = (name, node) => {
+    if(!name)
+        throw new Error('enter file name');
+    for(let i = 0; i < node.children.length; i++)
+    {
+        if(node.children[i].value === name && node.children[i].type === 'file' && node.children[i].url)
+        {
+            window.open(node.children[i].url);
+            return;
+        }
+    }
+    throw new Error('no such file');
+}
+
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
-c.font = ('40px monospace');
-maxWidth = canvas.width - 40;
+c.font = ('40px VT323');
+maxWidth = canvas.width - 80;
 maxChars = Math.floor(maxWidth / c.measureText('M').width);
 nowFolder = root;
 render();
@@ -226,14 +263,29 @@ const commands = {
     'ls': () => listContent(),
     'cd': (txt) => changeDir(txt[0]),
     'cat': (txt) => fileContent(txt[0], nowFolder),
-    'camera': () => window.open("https://zascii-camera.netlify.app/", "ascii-camera"),
-    'zoogle': () => window.open("https://zoogleit.netlify.app/", "zoogle"),
-    'neverdolist': () => window.open("https://neverdolist.netlify.app/", "neverdolist"),
-    'color': (text) => color = text[0],
-};
+    'color': (text) => {
+    if (!text[0])
+        throw new Error('enter a color');
+    if(text[0] === 'default')
+       color = '#008F46';
+    if (!CSS.supports('color', text[0]))
+        throw new Error('invalid color');
+
+    color = text[0];
+    },
+    'pwd': () => {
+        if(nowFolder != root)
+            addToHistory('root/' + pathToText(nowFolder))
+        else
+            addToHistory('root')
+    },
+    'resume': () => window.open("resume.pdf"),
+    'open': (txt) => urlOpen(txt[0], nowFolder),
+    };
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp') {
+        audioType.play();
         event.preventDefault();
         if (historyIndex > 0)
         {
@@ -244,6 +296,7 @@ input.addEventListener('keydown', (event) => {
     }
     else if (event.key === 'ArrowDown') {
         event.preventDefault();
+        audioType.play();
         if (historyIndex < commandHistory.length)
         {
             historyIndex++;
@@ -259,14 +312,15 @@ input.addEventListener('keydown', (event) => {
     }
     else if(event.key === 'Enter')
     {
-        if(input.value != '')
+        audioEnter.play();
+        if(input.value.trim() !== '')
         {
                 let parts = input.value.trim().split(" ");
-                addToHistory(pathToText(nowFolder) + " " + input.value);
+                addToHistory('visitor@zixos: ~/' + pathToText(nowFolder) + '$' + " " + input.value);
                 let command = parts[0];
                 try {
                     if(!Object.hasOwn(commands, command))
-                        throw new Error('command not found: ' + command);
+                        throw new Error('command not found: ' + command + " type 'help'");
                     commands[command](parts.slice(1));
                 } catch (err) {
                     addToHistory('error: ' + err.message);
@@ -293,6 +347,7 @@ input.addEventListener('input', () => {
         render();
     }, 600);
 });
+
 
 window.addEventListener('load', () => {
     input.focus();
