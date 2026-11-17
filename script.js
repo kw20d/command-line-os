@@ -3,13 +3,6 @@
 const introContainer = document.querySelector('#intro');
 const logoVideo = document.querySelector('#logo-intro');
 
-/*logoVideo.addEventListener('ended', () => {
-    introContainer.classList.add('ended');
-    setTimeout(() => {
-        introContainer.remove();
-    }, 700);
-});*/
-
 function endIntro() {
     introContainer.classList.add('ended');
     setTimeout(() => introContainer.remove(), 700);
@@ -284,6 +277,165 @@ let setColor = (text) => {
     color = text[0];
 }
 
+let runningProgram = null;
+
+const programs = {
+    'snake': {
+    start() {
+        this.dashing = false;
+        this.score = 0;
+        this.gameOver = false;
+        this.x = Math.floor(canvas.width / 40) * 20;
+        this.y = Math.floor(canvas.height / 40) * 20;
+        this.direction = 'right';
+        this.body = [
+            {x: this.x, y: this.y},
+            {x: this.x - 20, y: this.y},
+            {x: this.x - 40, y: this.y},
+            {x: this.x - 60, y: this.y},
+            {x: this.x - 80, y: this.y}
+        ];
+        this.spawnFood();
+        this.draw();
+        this.intervalId = setInterval(() => {
+            this.update();
+            this.draw();
+        }, 150);
+        input.focus();
+    },
+
+    draw() {
+        if (runningProgram !== 'snake') return;
+
+        c.fillStyle = 'black';
+        c.fillRect(0, 0, canvas.width, canvas.height);
+        c.strokeStyle = color;
+        c.strokeRect(40, 38, canvas.width - 80, canvas.height - 58);
+
+        c.fillStyle = color;
+        c.fillText('SNAKE, press Esc to quit', 40, 30);
+        c.fillText('score : ' + this.score, canvas.width - (5 + String(this.score).length) * 40, 30);
+
+        c.fillStyle = color;
+        this.body.forEach(snakePart => {
+            c.fillRect(snakePart.x, snakePart.y, 20, 20);
+        });
+
+        c.fillStyle = 'red';
+        c.fillRect(this.food.x, this.food.y, 20, 20);
+
+        if (this.gameOver) {
+            c.fillStyle = 'red';
+            c.textAlign = 'center';
+            c.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+            c.fillText('press R to resart', canvas.width / 2, canvas.height / 2+20);
+            c.textAlign = 'left';
+        }
+    },
+
+    update() {
+        if (this.gameOver) return;
+        switch(this.direction) {
+            case 'right': {
+                if (this.x >= canvas.width - 60) this.x = 20;
+                this.x += 20;
+                break;
+            }
+            case 'left': {
+                if (this.x <= 40) this.x = canvas.width - 60;
+                this.x -= 20;
+                break;
+            }
+            case 'up': {
+                if (this.y <= 40) this.y = canvas.height - 20;
+                this.y -= 20;
+                break;
+            }
+            case 'down': {
+                if (this.y >= canvas.height - 40) this.y = 20;
+                this.y += 20;
+                break;
+            } }
+
+        this.head = { x: this.x, y: this.y} ;
+        this.body.unshift(this.head);
+
+        if (this.body.slice(1).some(part =>
+            part.x === this.head.x && part.y === this.head.y
+        )) {
+            this.gameOver = true;
+            clearInterval(this.intervalId);
+            return;
+        }
+
+        if (this.head.x === this.food.x && this.head.y === this.food.y)
+        {
+            this.spawnFood();
+            this.score++;
+        }
+        else
+            this.body.pop();
+    },
+
+    spawnFood() {
+        do {
+            this.food = {
+                x: 80 + Math.floor(Math.random() * Math.floor((canvas.width - 180) / 20)) * 20,
+                y: 80 + Math.floor(Math.random() * Math.floor((canvas.height - 160) / 20)) * 20
+            };
+        } while (
+            this.body.some(part =>
+                part.x === this.food.x && part.y === this.food.y
+            )
+        );
+    },
+
+    dash() {
+        if (this.gameOver) return;
+
+        clearInterval(this.intervalId);
+
+        this.intervalId = setInterval(() => {
+            this.update();
+            this.draw();
+        }, this.dashing ? 60 : 150);
+    },
+
+    onKey(eventType, key) {
+        if (key === 'ArrowDown' && this.direction !== 'up')
+            this.direction = 'down';
+        else if (key === 'ArrowUp' && this.direction !== 'down')
+            this.direction = 'up';
+        else if (key === 'ArrowLeft' && this.direction !== 'right')
+            this.direction = 'left';
+        else if (key === 'ArrowRight' && this.direction !== 'left')
+            this.direction = 'right';
+        else if (key.toLowerCase() === 'r' && this.gameOver) {
+            clearInterval(this.intervalId);
+            this.start();
+        }
+        else if (key === 'Shift') {
+            if (eventType === 'keydown' && !this.dashing) {
+                this.dashing = true;
+                this.dash();
+            }
+            else if (eventType === 'keyup' && this.dashing) {
+                this.dashing = false;
+                this.dash();
+            }
+        }
+    },
+
+    stop() {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+        isTyping = false;
+        cursorOn = true;
+        addToHistory('quit');
+        input.focus();
+    }
+    }
+}
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 c.font = ('40px VT323, monospace');
@@ -299,7 +451,7 @@ document.fonts.load("40px VT323")
     });
 
 setInterval(() => {
-    if(!isTyping)
+    if(!isTyping && runningProgram === null)
     {
         cursorOn = !cursorOn;
         render();
@@ -365,12 +517,25 @@ const commands = {
     open: {
         execute: (txt) => urlOpen(txt[0], nowFolder),
         description: 'open - opens the file attached url\n'
+    },
+    start:{ 
+        execute: (txt) => {
+            if(!txt[0])
+                throw new Error('enter game name');
+            if(!Object.hasOwn(programs, txt[0]))
+                throw new Error('no such game');
+            runningProgram = txt[0];
+            programs[txt[0]].start();
+        },
+        description: 'start - play the games\n'
     }
 };
 
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowUp') {
+    if(runningProgram === null)
+    {
+        if (event.key === 'ArrowUp') {
         audioType.currentTime = 0;
         audioType.play();
         event.preventDefault();
@@ -380,49 +545,78 @@ input.addEventListener('keydown', (event) => {
             input.value = commandHistory[historyIndex];
             render();
         }
-    }
-    else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        audioType.currentTime = 0;
-        audioType.play();
-        if (historyIndex < commandHistory.length)
-        {
-            historyIndex++;
-            if(historyIndex == commandHistory.length)
+        }
+        else if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            audioType.currentTime = 0;
+            audioType.play();
+            if (historyIndex < commandHistory.length)
             {
-                input.value = '';
+                historyIndex++;
+                if(historyIndex == commandHistory.length)
+                {
+                    input.value = '';
+                    render();
+                    return;
+                }
+                input.value = commandHistory[historyIndex];
                 render();
-                return;
             }
-            input.value = commandHistory[historyIndex];
-            render();
+        }
+        else if(event.key === 'Enter')
+        {
+            audioEnter.play();
+            if(input.value.trim() !== '')
+            {
+                    let parts = input.value.trim().split(" ");
+                    addToHistory('visitor@zixos: ~/' + pathToText(nowFolder) + ' $ '+ input.value);
+                    let command = parts[0];
+                    try {
+                        if(!Object.hasOwn(commands, command))
+                            throw new Error('command not found: ' + command + " type 'help'");
+                        commands[command].execute(parts.slice(1));
+                    } catch (err) {
+                        addToHistory('error: ' + err.message);
+                        console.error(err);
+                    }
+                    commandHistory.push(parts.join(' '));
+                    historyIndex = commandHistory.length;
+                    input.value='';
+                    if (runningProgram === null)
+                        render();
+            }
         }
     }
-    else if(event.key === 'Enter')
-    {
-        audioEnter.play();
-        if(input.value.trim() !== '')
+    else 
         {
-                let parts = input.value.trim().split(" ");
-                addToHistory('visitor@zixos: ~/' + pathToText(nowFolder) + ' $ '+ input.value);
-                let command = parts[0];
-                try {
-                    if(!Object.hasOwn(commands, command))
-                        throw new Error('command not found: ' + command + " type 'help'");
-                    commands[command].execute(parts.slice(1));
-                } catch (err) {
-                    addToHistory('error: ' + err.message);
-                    console.error(err);
-                }
-                commandHistory.push(parts.join(' '));
-                historyIndex = commandHistory.length;
-                input.value='';
-                render();
+        let current = runningProgram;
+
+        event.preventDefault();
+
+        if (event.key === 'Escape') {
+            programs[current].stop();
+            runningProgram = null;
+            render();
+            return;
+        }
+
+        programs[current].onKey(event, event.key);
+
+        if (event.key === 'Shift') {
+            programs[current].onKey(event.type, event.key);
         }
     }
 });
 
+
+input.addEventListener('keyup', event => {
+    if(runningProgram === null) return;
+    if (event.key === 'Shift')
+        programs[runningProgram].onKey(event.type, event.key);
+});
+
 input.addEventListener('input', () => {
+    if (runningProgram !== null) return;
     audioType.currentTime = 0;
     audioType.play();
     isTyping = true;
@@ -432,6 +626,7 @@ input.addEventListener('input', () => {
     clearTimeout(typingTimeout);
 
     typingTimeout = setTimeout(() => {
+        if (runningProgram !== null) return;
         isTyping = false;
         cursorOn = true;
         render();
