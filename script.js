@@ -1,12 +1,27 @@
+
+
 const introContainer = document.querySelector('#intro');
 const logoVideo = document.querySelector('#logo-intro');
 
-logoVideo.addEventListener('ended', () => {
+/*logoVideo.addEventListener('ended', () => {
     introContainer.classList.add('ended');
     setTimeout(() => {
         introContainer.remove();
     }, 700);
-});
+});*/
+
+function endIntro() {
+    introContainer.classList.add('ended');
+    setTimeout(() => introContainer.remove(), 700);
+}
+logoVideo.addEventListener('ended', endIntro);
+logoVideo.addEventListener('error', endIntro);
+setTimeout(endIntro, 8000);
+
+document.addEventListener('keydown', (event) => {
+    if(event.key === 'Escape')
+        endIntro();
+})
 
 let canvas = document.querySelector('#main-canvas');
 let c = canvas.getContext('2d');
@@ -18,7 +33,6 @@ let cursorOn = true;
 let isTyping = false;
 let typingTimeout;
 let maxWidth;
-let maxChars;
 let color = '#008F46';
 const audioEnter = new Audio('sfx-re.wav');
 const audioType = new Audio('sfx-add.wav');
@@ -91,38 +105,39 @@ let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4', 'file',"Type open
 let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4', 'file' ,"Type open blender-journey.mp4 to see", "https://www.instagram.com/p/DXcVHmGRTEy/");
 
 let wrapText = (text) => {
+    if (!text)
+        return [];
+
     let lines = text.split('\n');
     let result = [];
-    for(let i = 0; i < lines.length; i++)
-    {
+
+    for (let i = 0; i < lines.length; i++) {
         let words = lines[i].split(' ');
         let currentLine = "";
-        let wrappedLines = [];
-        for(let j = 0; j < words.length; j++)
-        {
-            let word = words[j];
-            let testLine = "";
 
-        if(currentLine === "")
-            testLine = word;
-        else
-            testLine = currentLine + " " + word;
-            if(c.measureText(testLine).width <= maxWidth)
+        for (let j = 0; j < words.length; j++) {
+            let word = words[j];
+
+            let testLine = currentLine === ""
+                ? word
+                : currentLine + " " + word;
+
+            if (c.measureText(testLine).width <= maxWidth) {
                 currentLine = testLine;
-            else {
-                if(currentLine !== "")
-                    wrappedLines.push(currentLine);
+            } else {
+                if (currentLine !== "")
+                    result.push(currentLine);
+
                 currentLine = word;
             }
         }
-        if(currentLine !== "")
-            wrappedLines.push(currentLine);
-        for(let k = 0; k < wrappedLines.length; k++) {
-            result.push(wrappedLines[k]);
-        }
+
+        if (currentLine !== "")
+            result.push(currentLine);
     }
+
     return result;
-}
+};
 
 let addToHistory = (text) => {
     let wrappedLines = wrapText(text);
@@ -188,82 +203,71 @@ let changeDir = txt => {
         else 
             return;
     }
-    let found = false;  
-    for(let i = 0; i < nowFolder.children.length; i++)
-    {
-        if(txt === nowFolder.children[i].value && nowFolder.children[i].type === 'folder') 
-        {
-            nowFolder = nowFolder.children[i];
-            found = true;
-            break;
-        }
-    }
-    if(found === false)
+    let arr = findChild(txt, nowFolder);
+    if(!arr [0])
         throw new Error('no such folder');
+    else
+    {
+        if(arr[2] === 'folder')
+            nowFolder = arr[1];
+        else
+            throw new Error('not a directory');
+    }
 }
+
+let findChild = (txt, node) => {
+    let type = null;
+    let found = false;
+    let child = node.children.find(child => child.value === txt);
+    if(child !== undefined)
+        found = true;
+    if(child)
+        type = child.type;
+    return [found, child, type];
+} 
 
 let clearScreen = () => {
     renderHistory = [];
 }
 
 let helpCommands = () => {
-    let commandsList = 'clear - resets the terminal\nhelp - see commands\necho - prints\nwhoami - tells you\nls - listing files\ncd - changes the working directory\ncat - file content\ncolor - change text color\npwd - display the current directory\nresume - check my resume\nopen-opens the file attached url';
+    let commandsList = '';
+    for (let command of Object.values(commands))
+        commandsList += command.description;
     addToHistory(commandsList);
 }
 
 let fileContent = (name, node) => {
     if(!name)
         throw new Error('enter file name');
-    for(let i = 0; i < node.children.length; i++)
+    let arr = findChild(name, node);
+    if(!arr[0])
+        throw new Error('no such file');
+    else
     {
-        if(node.children[i].value === name && node.children[i].type === 'file')
-        {
-            addToHistory(node.children[i].content);
-            return;
-        }
+        if(arr[2] === 'file')
+            addToHistory(arr[1].content);
+        else
+            throw new Error('is a directory');
     }
-    throw new Error('no such file');
 }
 
 let urlOpen = (name, node) => {
     if(!name)
         throw new Error('enter file name');
-    for(let i = 0; i < node.children.length; i++)
+    let arr = findChild(name, node);
+    if(!arr[0])
+        throw new Error('no such file');
+    else
     {
-        if(node.children[i].value === name && node.children[i].type === 'file' && node.children[i].url)
-        {
-            window.open(node.children[i].url);
-            return;
-        }
+        if(arr[2] === 'file' && arr[1].url)
+            window.open(arr[1].url);
+        else
+            throw new Error('nothing to open');
     }
-    throw new Error('no such file');
 }
 
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-c.font = ('40px VT323, monospace');
-maxWidth = canvas.width - 80;
-maxChars = Math.floor(maxWidth / c.measureText('M').width);
-nowFolder = root;
-render();
-
-setInterval(() => {
-    if(!isTyping)
-    {
-        cursorOn = !cursorOn;
-        render();
-    }
-}, 500);
-
-const commands = {
-    'help':  () => helpCommands(),
-    'clear': () => clearScreen(),
-    'echo': (txt) => addToHistory(txt.join(" ")),
-    'whoami': () => addToHistory("Zixted's Fan"),
-    'ls': () => listContent(),
-    'cd': (txt) => changeDir(txt[0]),
-    'cat': (txt) => fileContent(txt[0], nowFolder),
-    'color': (text) => {
+let setColor = (text) => {
     if (!text[0])
         throw new Error('enter a color');
     if(text[0] === 'default')
@@ -275,16 +279,92 @@ const commands = {
         throw new Error('invalid color');
 
     color = text[0];
+}
+
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+c.font = ('40px VT323, monospace');
+maxWidth = canvas.width - 80;
+nowFolder = root;
+document.fonts.load("40px VT323")
+    .then(() => {
+        render();
+    })
+    .catch((error) => {
+        console.error("Font loading failed:", error);
+        render();
+    });
+
+setInterval(() => {
+    if(!isTyping)
+    {
+        cursorOn = !cursorOn;
+        render();
+    }
+}, 500);
+
+const commands = {
+    help: {
+        execute: () => helpCommands(),
+        description: 'help - see commands\n'
     },
-    'pwd': () => {
-        if(nowFolder != root)
-            addToHistory('root/' + pathToText(nowFolder))
-        else
-            addToHistory('root')
+
+    clear: {
+        execute: () => clearScreen(),
+        description: 'clear - resets the terminal\n'
     },
-    'resume': () => window.open("resume.pdf"),
-    'open': (txt) => urlOpen(txt[0], nowFolder),
-    };
+
+    echo: {
+        execute: (txt) => addToHistory(txt.join(" ")),
+        description: 'echo - prints\n'
+    },
+
+    whoami: {
+        execute: () => addToHistory("Zixted's Fan"),
+        description: 'whoami - tells you who you are\n'
+    },
+
+    ls: {
+        execute: () => listContent(),
+        description: 'ls - listing files\n'
+    },
+
+    cd: {
+        execute: (txt) => changeDir(txt[0]),
+        description: 'cd - changes the working directory\n'
+    },
+
+    cat: {
+        execute: (txt) => fileContent(txt[0], nowFolder),
+        description: 'cat - file content\n'
+    },
+
+    color: {
+        execute: (txt) => setColor(txt),
+        description: 'color - change text color\n'
+    },
+
+    pwd: {
+        execute: () => {
+            if (nowFolder != root)
+                addToHistory('root/' + pathToText(nowFolder));
+            else
+                addToHistory('root');
+        },
+        description: 'pwd - display the current directory\n'
+    },
+
+    resume: {
+        execute: () => window.open("resume.pdf"),
+        description: 'resume - check my resume\n'
+    },
+
+    open: {
+        execute: (txt) => urlOpen(txt[0], nowFolder),
+        description: 'open - opens the file attached url\n'
+    }
+};
+
 let commandHistory = [];
 input.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp') {
@@ -326,7 +406,7 @@ input.addEventListener('keydown', (event) => {
                 try {
                     if(!Object.hasOwn(commands, command))
                         throw new Error('command not found: ' + command + " type 'help'");
-                    commands[command](parts.slice(1));
+                    commands[command].execute(parts.slice(1));
                 } catch (err) {
                     addToHistory('error: ' + err.message);
                     console.error(err);
@@ -340,6 +420,8 @@ input.addEventListener('keydown', (event) => {
 });
 
 input.addEventListener('input', () => {
+    audioType.currentTime = 0;
+    audioType.play();
     isTyping = true;
     cursorOn = true;
     render();
