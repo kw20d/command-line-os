@@ -1,31 +1,51 @@
 ![ZIX-OS](intro.gif)
 
-A command-line "operating system" that doubles as my portfolio. Type commands to explore my projects, motion work and contact info.
+# ZIX-OS
 
-**Live demo:** <[ZIX-OS](https://kw20d.github.io/command-line-os/)>
+A command-line "operating system" that doubles as my portfolio. Explore my projects, motion work and contact info by typing commands, then play a game.
+
+**Live demo:** [kw20d.github.io/command-line-os](https://kw20d.github.io/command-line-os/)
 
 ## Try it
-`help` · `ls` · `cd projects` · `cat bio.txt` · `open ascii-camera.app` · `color cyan`
+`help` · `ls` · `cd projects` · `cat bio.txt` · `open ascii-camera.app` · `color cyan` · `cd games` then `start snake`
+
+## What's inside
+```
+root/
+├── projects/   ascii-camera, neverdolist, zoogle (open them in a new tab)
+├── about/      bio.txt, contact.txt
+├── motion/     my motion design videos
+└── games/      snake
+```
 
 ## Commands
 | Command | What it does |
 |---|---|
 | `help` | list commands |
-| `ls`, `cd`, `pwd` | explore the virtual filesystem |
+| `ls`, `cd <folder>`, `pwd` | explore the virtual filesystem |
 | `cat <file>` | read a file |
 | `open <file>` | open a project or video in a new tab |
+| `start <game>` | play a game (from inside `games/`) |
 | `color <name>` | change the text colour |
+| `echo`, `whoami`, `clear` | the usual |
 | `resume` | open my resume |
+
+## Games
+Games run inside the terminal and take over the keyboard until you quit.
+
+| Game | Controls |
+|---|---|
+| [Snake](https://github.com/kw20d/snake-game) | Arrow keys to move, Shift to dash, R to restart, Esc to quit |
+
+Each game is its own module and its own repo. The terminal only needs a `start`, `onKey` and `stop` from it.
 
 ## How it's built
 - Vanilla JavaScript and HTML Canvas, no libraries
 - A tree of nodes (folders and files with parent links) for the filesystem
 - A command table that maps command names to functions
 - Canvas rendering with scrollback, word wrapping and a blinking cursor
+- A small program interface: while a game runs, the terminal routes every key to it and gives the screen back when it quits
 - Intro animation and sound effects
 
-## Credits
-Font: VT323 (SIL Open Font License). Intro animation made in After Effects.
-
-## Roadmap
-Games running inside the terminal, mobile layout, more commands.
+## Run it locally
+The code uses JavaScript modules, so open it through a local server instead of
