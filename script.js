@@ -1,4 +1,4 @@
-
+import { snake } from './snake.js';
 
 const introContainer = document.querySelector('#intro');
 const logoVideo = document.querySelector('#logo-intro');
@@ -99,6 +99,8 @@ let vid2 = addItem(folderNode, gallery, 'my-life-in-3d.mp4', 'file',"Type open m
 let vid3 = addItem(folderNode, gallery, 'oh-no-AI.mp4', 'file',"Type open oh-no-AI.mp4 to see" , "https://www.instagram.com/p/DWt9sgto-LP/");
 let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4', 'file',"Type open endless-hobbies.mp4 to see" , "https://www.instagram.com/p/DXKR4xGI-kV/");
 let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4', 'file' ,"Type open blender-journey.mp4 to see", "https://www.instagram.com/p/DXcVHmGRTEy/");
+let games = addItem(folderNode, root, 'games', 'folder');
+let game1 = addItem(folderNode, games, 'snake', 'file', "Type start snake to play it");
 
 let wrapText = (text) => {
     if (!text)
@@ -280,162 +282,9 @@ let setColor = (text) => {
 let runningProgram = null;
 
 const programs = {
-    'snake': {
-    start() {
-        this.dashing = false;
-        this.score = 0;
-        this.gameOver = false;
-        this.x = Math.floor(canvas.width / 40) * 20;
-        this.y = Math.floor(canvas.height / 40) * 20;
-        this.direction = 'right';
-        this.body = [
-            {x: this.x, y: this.y},
-            {x: this.x - 20, y: this.y},
-            {x: this.x - 40, y: this.y},
-            {x: this.x - 60, y: this.y},
-            {x: this.x - 80, y: this.y}
-        ];
-        this.spawnFood();
-        this.draw();
-        this.intervalId = setInterval(() => {
-            this.update();
-            this.draw();
-        }, 150);
-        input.focus();
-    },
+    snake,
+};
 
-    draw() {
-        if (runningProgram !== 'snake') return;
-
-        c.fillStyle = 'black';
-        c.fillRect(0, 0, canvas.width, canvas.height);
-        c.strokeStyle = color;
-        c.strokeRect(40, 38, canvas.width - 80, canvas.height - 58);
-
-        c.fillStyle = color;
-        c.fillText('SNAKE, press Esc to quit', 40, 30);
-        c.fillText('score : ' + this.score, canvas.width - (5 + String(this.score).length) * 40, 30);
-
-        c.fillStyle = color;
-        this.body.forEach(snakePart => {
-            c.fillRect(snakePart.x, snakePart.y, 20, 20);
-        });
-
-        c.fillStyle = 'red';
-        c.fillRect(this.food.x, this.food.y, 20, 20);
-
-        if (this.gameOver) {
-            c.fillStyle = 'red';
-            c.textAlign = 'center';
-            c.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
-            c.fillText('press R to resart', canvas.width / 2, canvas.height / 2+20);
-            c.textAlign = 'left';
-        }
-    },
-
-    update() {
-        if (this.gameOver) return;
-        switch(this.direction) {
-            case 'right': {
-                if (this.x >= canvas.width - 60) this.x = 20;
-                this.x += 20;
-                break;
-            }
-            case 'left': {
-                if (this.x <= 40) this.x = canvas.width - 60;
-                this.x -= 20;
-                break;
-            }
-            case 'up': {
-                if (this.y <= 40) this.y = canvas.height - 20;
-                this.y -= 20;
-                break;
-            }
-            case 'down': {
-                if (this.y >= canvas.height - 40) this.y = 20;
-                this.y += 20;
-                break;
-            } }
-
-        this.head = { x: this.x, y: this.y} ;
-        this.body.unshift(this.head);
-
-        if (this.body.slice(1).some(part =>
-            part.x === this.head.x && part.y === this.head.y
-        )) {
-            this.gameOver = true;
-            clearInterval(this.intervalId);
-            return;
-        }
-
-        if (this.head.x === this.food.x && this.head.y === this.food.y)
-        {
-            this.spawnFood();
-            this.score++;
-        }
-        else
-            this.body.pop();
-    },
-
-    spawnFood() {
-        do {
-            this.food = {
-                x: 80 + Math.floor(Math.random() * Math.floor((canvas.width - 180) / 20)) * 20,
-                y: 80 + Math.floor(Math.random() * Math.floor((canvas.height - 160) / 20)) * 20
-            };
-        } while (
-            this.body.some(part =>
-                part.x === this.food.x && part.y === this.food.y
-            )
-        );
-    },
-
-    dash() {
-        if (this.gameOver) return;
-
-        clearInterval(this.intervalId);
-
-        this.intervalId = setInterval(() => {
-            this.update();
-            this.draw();
-        }, this.dashing ? 60 : 150);
-    },
-
-    onKey(eventType, key) {
-        if (key === 'ArrowDown' && this.direction !== 'up')
-            this.direction = 'down';
-        else if (key === 'ArrowUp' && this.direction !== 'down')
-            this.direction = 'up';
-        else if (key === 'ArrowLeft' && this.direction !== 'right')
-            this.direction = 'left';
-        else if (key === 'ArrowRight' && this.direction !== 'left')
-            this.direction = 'right';
-        else if (key.toLowerCase() === 'r' && this.gameOver) {
-            clearInterval(this.intervalId);
-            this.start();
-        }
-        else if (key === 'Shift') {
-            if (eventType === 'keydown' && !this.dashing) {
-                this.dashing = true;
-                this.dash();
-            }
-            else if (eventType === 'keyup' && this.dashing) {
-                this.dashing = false;
-                this.dash();
-            }
-        }
-    },
-
-    stop() {
-        clearInterval(this.intervalId);
-        this.intervalId = null;
-        isTyping = false;
-        cursorOn = true;
-        addToHistory('quit');
-        input.focus();
-    }
-    }
-}
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 c.font = ('40px VT323, monospace');
@@ -518,14 +367,27 @@ const commands = {
         execute: (txt) => urlOpen(txt[0], nowFolder),
         description: 'open - opens the file attached url\n'
     },
-    start:{ 
+    start: {
         execute: (txt) => {
-            if(!txt[0])
+            if (!txt[0])
                 throw new Error('enter game name');
-            if(!Object.hasOwn(programs, txt[0]))
-                throw new Error('no such game');
+
+            if (nowFolder !== games)
+                throw new Error('games are only accessible inside games/');
+
+            let game = findChild(txt[0], nowFolder);
+
+            if (!game[0])
+                throw new Error('game not found');
+
+            if (game[2] !== 'file')
+                throw new Error('not a game file');
+
+            if (!Object.hasOwn(programs, txt[0]))
+                throw new Error('game is not executable');
+
             runningProgram = txt[0];
-            programs[txt[0]].start();
+            programs[txt[0]].start(canvas);
         },
         description: 'start - play the games\n'
     }
@@ -600,11 +462,7 @@ input.addEventListener('keydown', (event) => {
             return;
         }
 
-        programs[current].onKey(event, event.key);
-
-        if (event.key === 'Shift') {
-            programs[current].onKey(event.type, event.key);
-        }
+        programs[current].onKey(event.type, event.key);
     }
 });
 
