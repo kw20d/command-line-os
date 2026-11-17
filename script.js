@@ -19,9 +19,12 @@ logoVideo.addEventListener('error', endIntro);
 setTimeout(endIntro, 8000);
 
 document.addEventListener('keydown', (event) => {
-    if(event.key === 'Escape')
-        endIntro();
-})
+    endIntro();
+}, { once: true })
+
+document.addEventListener('click', (event) => {
+    endIntro();
+}, { once: true })
 
 let canvas = document.querySelector('#main-canvas');
 let c = canvas.getContext('2d');
