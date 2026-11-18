@@ -10,16 +10,22 @@ A command-line "operating system" that doubles as my portfolio. Explore my proje
 
 `help` · `ls` · `cd projects` · `cat bio.txt` · `open ascii-camera.app` · `color cyan` · `cd programs` then `start snake` or `start sudoku`
 
+## Examples
+![cd command](1.gif)
+![snake game](2.gif)
+![sudoku game](3.gif)
+
 ## What's inside
 
 ```text
 root/
-├── projects/    ascii-camera, neverdolist,
-├── about/       bio.txt
-    └── contact/    github, instagram, youtube, phtotgraphy, mail
-├── motion/      my motion design videos
-└── programs/    snake, sudoku, camera
+├── projects/     ascii-camera, neverdolist
+├── about/        bio.txt, contact/ (github, instagram, youtube, photography, mail)
+├── motion/       my motion design videos
+└── programs/     snake, sudoku, camera
 ```
+
+| ASCII Camera | 1-5 switch style and colour, + and - change resolution, Esc to quit. Asks for camera access. Nothing is recorded or uploaded. |
 
 ## Commands
 
@@ -79,3 +85,6 @@ Then visit [http://localhost:8000](http://localhost:8000).
 ---
 
 Built with curiosity, JavaScript and a terminal-inspired aesthetic.
+Best on a desktop with a keyboard.
+
+Credits: Font: VT323 (SIL Open Font License). Intro animation made in After Effects.

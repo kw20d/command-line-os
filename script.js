@@ -469,6 +469,8 @@ input.addEventListener('keydown', (event) => {
 
         if (event.key === 'Escape') {
             programs[current].stop();
+            isTyping = false;
+            cursorOn = true;
             runningProgram = null;
             render();
             return;
