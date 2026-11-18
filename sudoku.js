@@ -161,105 +161,266 @@ const sudoku =  (() => {
         c = canvas.getContext('2d');
         draw();
     };
-    let draw = () => {
-        c.save();
-        availableWidth = canvas.width;
-        availableHeight = canvas.height - 200;
-        cellSize = Math.floor(
-        Math.min(availableWidth, availableHeight) / 9
+    
+let draw = () => {
+    c.save();
+
+    // Background
+    c.fillStyle = '#050806';
+    c.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Window layout
+    const frameWidth = Math.min(canvas.width * 0.86, 1000);
+    const frameHeight = canvas.height * 0.90;
+
+    const frameX = (canvas.width - frameWidth) / 2;
+    const frameY = (canvas.height - frameHeight) / 2;
+
+    const headerHeight = 46;
+    const footerHeight = 34;
+    const padding = 20;
+
+    // Sudoku board sizing
+    const maxBoardWidth = frameWidth - padding * 2;
+    const maxBoardHeight = frameHeight - headerHeight - footerHeight - padding * 2;
+
+    cellSize = Math.floor(
+        Math.min(maxBoardWidth, maxBoardHeight) / 9
+    );
+
+    boardSize = cellSize * 9;
+
+    offsetX = Math.floor(
+        (canvas.width - boardSize) / 2
+    );
+
+    offsetY = Math.floor(
+        frameY + headerHeight +
+        (frameHeight - headerHeight - footerHeight - boardSize) / 2
+    );
+
+    // Main window
+    c.strokeStyle = color;
+    c.lineWidth = 2;
+
+    c.strokeRect(
+        frameX,
+        frameY,
+        frameWidth,
+        frameHeight
+    );
+
+    // Header separator
+    c.beginPath();
+    c.moveTo(frameX, frameY + headerHeight);
+    c.lineTo(frameX + frameWidth, frameY + headerHeight);
+    c.stroke();
+
+    // Footer separator
+    c.beginPath();
+    c.moveTo(frameX, frameY + frameHeight - footerHeight);
+    c.lineTo(frameX + frameWidth, frameY + frameHeight - footerHeight);
+    c.stroke();
+
+    // Header
+    c.fillStyle = color;
+    c.font = '23px "VT323", monospace';
+    c.textBaseline = 'middle';
+    c.textAlign = 'left';
+
+    c.fillText(
+        'ZIX-OS // SUDOKU',
+        frameX + padding,
+        frameY + 23
+    );
+
+    c.textAlign = 'right';
+
+    c.fillText(
+        `ATTEMPTS: ${attempts}/3`,
+        frameX + frameWidth - padding,
+        frameY + 23
+    );
+
+    // Board background
+    c.fillStyle = '#050806';
+    c.fillRect(offsetX, offsetY, boardSize, boardSize);
+
+    // Selected row
+    c.fillStyle = '#15271B';
+    c.fillRect(
+        offsetX,
+        offsetY + selectedRow * cellSize,
+        boardSize,
+        cellSize
+    );
+
+    // Selected column
+    c.fillRect(
+        offsetX + selectedCol * cellSize,
+        offsetY,
+        cellSize,
+        boardSize
+    );
+
+    // Selected 3x3 block
+    const blockStart = startBlockOf(selectedRow, selectedCol);
+
+    c.fillStyle = '#203C29';
+
+    c.fillRect(
+        offsetX + blockStart[1] * cellSize,
+        offsetY + blockStart[0] * cellSize,
+        cellSize * 3,
+        cellSize * 3
+    );
+
+    // Selected cell
+    c.fillStyle = '#365C3A';
+
+    c.fillRect(
+        offsetX + selectedCol * cellSize,
+        offsetY + selectedRow * cellSize,
+        cellSize,
+        cellSize
+    );
+
+    // Grid lines
+    c.strokeStyle = color;
+    c.lineWidth = 1;
+
+    for (let i = 0; i <= 9; i++) {
+        c.beginPath();
+
+        c.moveTo(offsetX + i * cellSize, offsetY);
+        c.lineTo(offsetX + i * cellSize, offsetY + boardSize);
+
+        c.stroke();
+
+        c.beginPath();
+
+        c.moveTo(offsetX, offsetY + i * cellSize);
+        c.lineTo(offsetX + boardSize, offsetY + i * cellSize);
+
+        c.stroke();
+    }
+
+    // 3x3 block borders
+    c.lineWidth = 3;
+
+    for (let i = 0; i <= 3; i++) {
+        c.beginPath();
+
+        c.moveTo(offsetX + i * cellSize * 3, offsetY);
+        c.lineTo(offsetX + i * cellSize * 3, offsetY + boardSize);
+
+        c.stroke();
+
+        c.beginPath();
+
+        c.moveTo(offsetX, offsetY + i * cellSize * 3);
+        c.lineTo(offsetX + boardSize, offsetY + i * cellSize * 3);
+
+        c.stroke();
+    }
+
+    // Numbers
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.font = `${cellSize * 0.68}px "VT323", monospace`;
+
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+
+            const currentCell = board[indexOf(i, j)];
+            const txt = currentCell.value;
+
+            if (txt === '0') continue;
+
+            // Number colors
+            if (isIllegal(txt, board, i, j)) {
+                c.fillStyle = '#FF4545';
+            }
+            else if (i === selectedRow && j === selectedCol) {
+                c.fillStyle = '#FFFFFF';
+            }
+            else if (
+                txt === board[indexOf(selectedRow, selectedCol)].value
+            ) {
+                c.fillStyle = '#00C96B';
+            }
+            else if (currentCell.given) {
+                c.fillStyle = '#648861';
+            }
+            else {
+                c.fillStyle = color;
+            }
+
+            c.fillText(
+                txt,
+                offsetX + (j + 0.5) * cellSize,
+                offsetY + (i + 0.5) * cellSize
+            );
+        }
+    }
+
+    // Game over / victory overlay
+    if (gameWon || gameOver) {
+
+        c.fillStyle = 'rgba(0, 8, 4, 0.82)';
+
+        c.fillRect(
+            offsetX,
+            offsetY,
+            boardSize,
+            boardSize
         );
-        boardSize = cellSize * 9;
-        offsetX = Math.floor((canvas.width - boardSize) / 2);
-        offsetY = Math.floor((canvas.height - boardSize) / 2);
-
-        c.fillStyle = 'black';
-        c.fillRect(0, 0, canvas.width, canvas.height);
-
-        c.fillStyle = '#263D2B';
-        for(let i = 0; i < 9; i++)
-        {
-            c.fillRect(offsetX + (i * cellSize), offsetY + (selectedRow * cellSize), cellSize, cellSize);
-        }
-
-        c.fillStyle = '#263D2B';
-        for(let i = 0; i < 9; i++)
-        {
-            c.fillRect(offsetX + (selectedCol * cellSize), offsetY + (i * cellSize), cellSize, cellSize);
-        }
-
-        let blockStart = startBlockOf(selectedRow, selectedCol);
-
-        c.fillStyle = '#365C3A';
-        for(let i = 0; i < 3; i++)
-        {
-            for(let j = 0; j < 3; j++)
-            {
-                c.fillRect(offsetX + (blockStart[1] + j) * cellSize, offsetY + (blockStart[0] + i) * cellSize, cellSize, cellSize);
-            }
-        }
-
-        c.fillStyle = '#A8E6A0';
-        c.fillRect(offsetX + (selectedCol * cellSize), offsetY + (selectedRow * cellSize), cellSize, cellSize);
-
-
-        c.strokeStyle = color;
-        c.lineWidth = 1;
-        for(let i = 0; i < 9; i++)
-        {
-            for(let j = 0; j < 9; j++)
-            {
-                c.strokeRect(offsetX + (j * cellSize), offsetY + (i * cellSize), cellSize, cellSize);
-            }
-        }
-        c.lineWidth = 3;
-        for(let i = 0; i < 3; i++)
-        {
-            for(let j = 0; j < 3; j++)
-            {
-                c.strokeRect(offsetX + (3 * j * cellSize), offsetY + (3 * i * cellSize), 3 * cellSize, 3 * cellSize);
-            }
-        }
 
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.font = cellSize * 0.7 + 'px VT323';
-        for(let i = 0; i < 9; i++)
-        {
-            let txt;
-            for(let j = 0; j < 9; j++)
-            {
-                txt = board[indexOf(i, j)].value;
-                if(txt !== '0')
-                {
-                    if(txt === board[indexOf(selectedRow, selectedCol)].value)
-                        c.fillStyle = '#f9fff8';
-                    else if(isGiven(i, j, board))
-                        c.fillStyle = '#648861';
-                    else
-                        c.fillStyle = color;
-                    if (isIllegal(txt, board, i, j))
-                        c.fillStyle = '#ff0000';
-                    c.fillText(txt, offsetX + (j + 0.5) * cellSize, offsetY + (i + 0.5) * cellSize);
-                }
-            }
-        }
 
-        c.fillStyle = color;
-        c.font = '40px VT323';
-        c.fillText('SUDOKU, press Esc to quit', 235, 18);
-        if(gameWon)
-        {   
-            c.fillText('YOU WON', canvas.width/2, 60);
-            c.fillText('press R to restart', canvas.width/2, canvas.height - 60);
-        }
-        if(gameOver)
-        {   
-            c.fillStyle = 'red';
-            c.fillText('GAME OVER', canvas.width/2, 60);
-            c.fillText('press R to restart', canvas.width/2, canvas.height - 60);
-        }
-        c.restore();
-    };
+        c.fillStyle = gameWon ? '#00C96B' : '#FF4545';
+
+        c.font = '48px "VT323", monospace';
+
+        c.fillText(
+            gameWon ? 'YOU WON' : 'GAME OVER',
+            canvas.width / 2,
+            canvas.height / 2 - 20
+        );
+
+        c.font = '26px "VT323", monospace';
+
+        c.fillText(
+            'PRESS R TO RESTART',
+            canvas.width / 2,
+            canvas.height / 2 + 25
+        );
+    }
+
+    // Footer
+    c.fillStyle = color;
+    c.font = '16px "VT323", monospace';
+    c.textBaseline = 'middle';
+    c.textAlign = 'left';
+
+    c.fillText(
+        'ARROWS MOVE  1-9 ENTER  BACKSPACE CLEAR',
+        frameX + padding,
+        frameY + frameHeight - 17
+    );
+
+    c.textAlign = 'right';
+
+    c.fillText(
+        'ESC TO EXIT',
+        frameX + frameWidth - padding,
+        frameY + frameHeight - 17
+    );
+
+    c.restore();
+};
+
     let onKey = (eventType, key) => {
         if(eventType === 'keydown')
         {

@@ -1,5 +1,6 @@
 import { snake } from './snake.js';
 import { sudoku } from './sudoku.js';
+import { camera } from './camera.js';
 
 const introContainer = document.querySelector('#intro');
 const logoVideo = document.querySelector('#logo-intro');
@@ -100,9 +101,10 @@ let vid2 = addItem(folderNode, gallery, 'my-life-in-3d.mp4', 'file',"Type open m
 let vid3 = addItem(folderNode, gallery, 'oh-no-AI.mp4', 'file',"Type open oh-no-AI.mp4 to see" , "https://www.instagram.com/p/DWt9sgto-LP/");
 let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4', 'file',"Type open endless-hobbies.mp4 to see" , "https://www.instagram.com/p/DXKR4xGI-kV/");
 let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4', 'file' ,"Type open blender-journey.mp4 to see", "https://www.instagram.com/p/DXcVHmGRTEy/");
-let games = addItem(folderNode, root, 'games', 'folder');
-let game1 = addItem(folderNode, games, 'snake', 'file', "Type start snake to play it");
-let game2 = addItem(folderNode, games, 'sudoku', 'file', "Type start sudoku to play it");
+let programsPlace = addItem(folderNode, root, 'programs', 'folder');
+let program1 = addItem(folderNode, programsPlace, 'snake', 'file', "Type start snake to play it");
+let program2 = addItem(folderNode, programsPlace, 'sudoku', 'file', "Type start sudoku to play it");
+let program3 = addItem(folderNode, programsPlace, 'camera', 'file', "Type start camera to start it");
 
 let wrapText = (text) => {
     if (!text)
@@ -148,6 +150,10 @@ let addToHistory = (text) => {
 };
 
 let render = () => {
+    c.font = '40px VT323, monospace';
+    c.textAlign = 'left';
+    c.textBaseline = 'alphabetic';
+    c.lineWidth = 1;
     let visibleRows = Math.floor(((canvas.height - 80) / 40) - 1);
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = 'black';
@@ -286,6 +292,7 @@ let runningProgram = null;
 const programs = {
     snake,
     sudoku,
+    camera,
 };
 
 canvas.height = window.innerHeight;
@@ -373,26 +380,26 @@ const commands = {
     start: {
         execute: (txt) => {
             if (!txt[0])
-                throw new Error('enter game name');
+                throw new Error('enter program name');
 
-            if (nowFolder !== games)
-                throw new Error('games are only accessible inside games/');
+            if (nowFolder !== programsPlace)
+                throw new Error('programs are only accessible inside programs/');
 
-            let game = findChild(txt[0], nowFolder);
+            let program = findChild(txt[0], nowFolder);
 
-            if (!game[0])
-                throw new Error('game not found');
+            if (!program[0])
+                throw new Error('program not found');
 
-            if (game[2] !== 'file')
-                throw new Error('not a game file');
+            if (program[2] !== 'file')
+                throw new Error('not a program file');
 
             if (!Object.hasOwn(programs, txt[0]))
-                throw new Error('game is not executable');
+                throw new Error('program is not executable');
 
             runningProgram = txt[0];
             programs[txt[0]].start(canvas);
         },
-        description: 'start - play the games\n'
+        description: 'start - try the programs\n'
     }
 };
 

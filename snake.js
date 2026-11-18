@@ -1,83 +1,244 @@
+
 const snake = (() => {
-let canvas;
-let c;
+    let canvas;
+    let c;
 
-let color = '#008F46';
+    let color = '#008F46';
 
-let dashing;
-let food;
-let head;
-let intervalId;
-let score;
-let gameOver;
-let x;
-let y;
-let direction;
-let body = [];
-let isRunning = false;
-let directionChanged;
+    let dashing;
+    let food;
+    let head;
+    let intervalId;
+    let score;
+    let gameOver;
+    let x;
+    let y;
+    let direction;
+    let body = [];
+    let isRunning = false;
+    let directionChanged;
 
-let draw = () => {
-    c.fillStyle = 'black';
-    c.fillRect(0, 0, canvas.width, canvas.height);
+    // Camera-matching window layout
 
-    c.strokeStyle = color;
-    c.strokeRect(40, 38, canvas.width - 80, canvas.height - 58);
+    let frame;
+    let playX;
+    let playY;
+    let playWidth;
+    let playHeight;
 
-    c.fillStyle = color;
-    c.fillText('SNAKE, press Esc to quit', 40, 30);
-    c.fillText(
-        'score : ' + score,
-        canvas.width - (5 + String(score).length) * 40,
-        30
-    );
+    const getFrame = () => {
+        const width = Math.min(canvas.width * 0.76, 1100);
+        const height = canvas.height * 0.74;
 
-    c.fillStyle = color;
-    body.forEach(snakePart => {
-        c.fillRect(snakePart.x, snakePart.y, 20, 20);
-    });
+        return {
+            x: (canvas.width - width) / 2,
+            y: (canvas.height - height) / 2,
+            width,
+            height
+        };
+    };
 
-    c.fillStyle = 'red';
-    c.fillRect(food.x, food.y, 20, 20);
+    const setLayout = () => {
+        frame = getFrame();
 
-    if (gameOver) {
-        c.fillStyle = 'red';
-        c.textAlign = 'center';
-        c.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
-        c.fillText('press R to restart', canvas.width / 2, canvas.height / 2 + 20);
+        const padding = 20;
+        const headerHeight = 46;
+        const footerHeight = 34;
+
+        playX = frame.x + padding;
+        playY = frame.y + headerHeight;
+
+        playWidth = frame.width - padding * 2;
+        playHeight = frame.height - headerHeight - footerHeight;
+    };
+
+    let draw = () => {
+        c.fillStyle = '#050806';
+        c.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Main window border
+
+        c.strokeStyle = color;
+        c.lineWidth = 2;
+
+        c.strokeRect(
+            frame.x,
+            frame.y,
+            frame.width,
+            frame.height
+        );
+
+        // Header separator
+
+        c.beginPath();
+        c.moveTo(frame.x, frame.y + 46);
+        c.lineTo(frame.x + frame.width, frame.y + 46);
+        c.stroke();
+
+        // Footer separator
+
+        c.beginPath();
+        c.moveTo(frame.x, frame.y + frame.height - 34);
+        c.lineTo(
+            frame.x + frame.width,
+            frame.y + frame.height - 34
+        );
+        c.stroke();
+
+        // Header
+
+        c.fillStyle = color;
+        c.font = '23px "VT323", monospace';
+        c.textBaseline = 'middle';
         c.textAlign = 'left';
-    }
-};
 
+        c.fillText(
+            'ZIX-OS // SNAKE',
+            frame.x + 20,
+            frame.y + 23
+        );
+        c.textAlign = 'right';
+
+        c.fillText(
+            `SCORE: ${score}`,
+            frame.x + frame.width - 20,
+            frame.y + 23
+        );
+
+        // Playfield
+
+        c.strokeStyle = color;
+        c.lineWidth = 1;
+
+        c.strokeRect(
+            playX,
+            playY,
+            playWidth,
+            playHeight
+        );
+
+        // Snake
+
+        c.fillStyle = color;
+
+        body.forEach((snakePart, index) => {
+            if (index === 0) {
+                c.fillStyle = '#00C96B';
+            } else {
+                c.fillStyle = color;
+            }
+
+            c.fillRect(
+                snakePart.x,
+                snakePart.y,
+                20,
+                20
+            );
+        });
+
+        // Food
+
+        c.fillStyle = '#FF4545';
+
+        c.fillRect(
+            food.x,
+            food.y,
+            20,
+            20
+        );
+
+        // Game over
+
+        if (gameOver) {
+            c.fillStyle = '#FF4545';
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+
+            c.font = '40px "VT323", monospace';
+
+            c.fillText(
+                'GAME OVER',
+                playX + playWidth / 2,
+                playY + playHeight / 2 - 20
+            );
+
+            c.font = '24px "VT323", monospace';
+
+            c.fillText(
+                'PRESS R TO RESTART',
+                playX + playWidth / 2,
+                playY + playHeight / 2 + 25
+            );
+        }
+
+        // Footer
+
+        c.fillStyle = color;
+        c.font = '16px "VT323", monospace';
+        c.textBaseline = 'middle';
+        c.textAlign = 'left';
+
+        c.fillText(
+            'ARROWS MOVE  SHIFT DASH',
+            frame.x + 20,
+            frame.y + frame.height - 17
+        );
+
+        c.textAlign = 'right';
+
+        c.fillText(
+            'ESC TO EXIT',
+            frame.x + frame.width - 20,
+            frame.y + frame.height - 17
+        );
+
+        c.textAlign = 'left';
+        c.textBaseline = 'alphabetic';
+    };
+
+    
 let update = () => {
     if (gameOver) return;
+
     directionChanged = false;
+
+    const cols = Math.floor(playWidth / 20);
+    const rows = Math.floor(playHeight / 20);
+
+    let dx = 0;
+    let dy = 0;
 
     switch (direction) {
         case 'right':
-            if (x >= canvas.width - 60) x = 20;
-            x += 20;
+            dx = 1;
             break;
-
         case 'left':
-            if (x <= 40) x = canvas.width - 60;
-            x -= 20;
+            dx = -1;
             break;
-
         case 'up':
-            if (y <= 40) y = canvas.height - 20;
-            y -= 20;
+            dy = -1;
             break;
-
         case 'down':
-            if (y >= canvas.height - 40) y = 20;
-            y += 20;
+            dy = 1;
             break;
     }
 
-    head = { x: x, y: y };
+    // Convert position to grid coordinates
+    let gridX = Math.round((x - playX) / 20);
+    let gridY = Math.round((y - playY) / 20);
+
+    // Move and wrap around the grid
+    gridX = (gridX + dx + cols) % cols;
+    gridY = (gridY + dy + rows) % rows;
+
+    x = playX + gridX * 20;
+    y = playY + gridY * 20;
+
+    head = { x, y };
+
     body.unshift(head);
 
+    // Self collision
     if (body.slice(1).some(part =>
         part.x === head.x && part.y === head.y
     )) {
@@ -86,132 +247,163 @@ let update = () => {
         return;
     }
 
+    // Food collision
     if (head.x === food.x && head.y === food.y) {
-        spawnFood();
         score++;
+        spawnFood();
     } else {
         body.pop();
     }
 };
 
-let spawnFood = () => {
-    const minX = 40;
-    const minY = 40;
 
-    const cols = Math.floor((canvas.width - 100) / 20) + 1;
-    const rows = Math.floor((canvas.height - 80) / 20) + 1;
+    let spawnFood = () => {
+    const cols = Math.floor(playWidth / 20);
+    const rows = Math.floor(playHeight / 20);
 
-    do {
-        food = {
-            x: minX + Math.floor(Math.random() * cols) * 20,
-            y: minY + Math.floor(Math.random() * rows) * 20
-        };
-    } while (
-        body.some(part =>
-            part.x === food.x && part.y === food.y
-        )
-    );
-};
+    const availableCells = [];
 
-let dash = () => {
-    if (gameOver) return;
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const cell = {
+                x: playX + col * 20,
+                y: playY + row * 20
+            };
 
-    clearInterval(intervalId);
+            const occupied = body.some(part =>
+                part.x === cell.x && part.y === cell.y
+            );
 
-    intervalId = setInterval(() => {
-        update();
-        draw();
-    }, dashing ? 60 : 150);
-};
+            if (!occupied) {
+                availableCells.push(cell);
+            }
+        }
+    }
 
-let onKey = (eventType, key) => {
-    if (
-        ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(key) &&
-        directionChanged
-    ) return;
-    
-    
-    if (!isRunning) return;
-    if (key === 'ArrowDown' && direction !== 'up')
-        {direction = 'down';
-        directionChanged = true;}
-
-    else if (key === 'ArrowUp' && direction !== 'down')
-        {direction = 'up';
-        directionChanged = true;}
-
-    else if (key === 'ArrowLeft' && direction !== 'right')
-        {direction = 'left';
-        directionChanged = true;}
-
-    else if (key === 'ArrowRight' && direction !== 'left')
-        {direction = 'right';
-        directionChanged = true;}
-
-    else if (key.toLowerCase() === 'r' && gameOver) {
+    if (availableCells.length === 0) {
+        gameOver = true;
         clearInterval(intervalId);
-        start(canvas);
+        return;
     }
 
-    else if (key === 'Shift') {
-        if (eventType === 'keydown' && !dashing) {
-            dashing = true;
-            dash();
-        }
-        else if (eventType === 'keyup' && dashing) {
-            dashing = false;
-            dash();
-        }
-    }
-
-    else if (key === 'Escape')
-        stop();
-};
-
-let stop = () => {
-    isRunning = false;
-    clearInterval(intervalId);
-};
-
-let start = (passedCanvas) => {
-    directionChanged = false;
-    isRunning = true;
-    canvas = passedCanvas;
-    c = canvas.getContext('2d');
-
-    c.font = '40px VT323, monospace';
-
-    clearInterval(intervalId);
-
-    dashing = false;
-    score = 0;
-    gameOver = false;
-
-    x = Math.floor(canvas.width / 40) * 20;
-    y = Math.floor(canvas.height / 40) * 20;
-
-    direction = 'right';
-
-    body = [
-        { x: x, y: y },
-        { x: x - 20, y: y },
-        { x: x - 40, y: y },
-        { x: x - 60, y: y },
-        { x: x - 80, y: y }
+    food = availableCells[
+        Math.floor(Math.random() * availableCells.length)
     ];
-
-    spawnFood();
-    draw();
-
-    intervalId = setInterval(() => {
-        update();
-        draw();
-    }, 150);
 };
+
+    let dash = () => {
+        if (gameOver) return;
+
+        clearInterval(intervalId);
+
+        intervalId = setInterval(() => {
+            update();
+            draw();
+        }, dashing ? 60 : 150);
+    };
+
+    let onKey = (eventType, key) => {
+        if (
+            ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(key) &&
+            directionChanged
+        ) return;
+
+        if (!isRunning) return;
+
+        if (key === 'ArrowDown' && direction !== 'up') {
+            direction = 'down';
+            directionChanged = true;
+        }
+
+        else if (key === 'ArrowUp' && direction !== 'down') {
+            direction = 'up';
+            directionChanged = true;
+        }
+
+        else if (key === 'ArrowLeft' && direction !== 'right') {
+            direction = 'left';
+            directionChanged = true;
+        }
+
+        else if (key === 'ArrowRight' && direction !== 'left') {
+            direction = 'right';
+            directionChanged = true;
+        }
+
+        else if (key.toLowerCase() === 'r' && gameOver) {
+            clearInterval(intervalId);
+            start(canvas);
+        }
+
+        else if (key === 'Shift') {
+            if (eventType === 'keydown' && !dashing) {
+                dashing = true;
+                dash();
+            }
+
+            else if (eventType === 'keyup' && dashing) {
+                dashing = false;
+                dash();
+            }
+        }
+
+        else if (key === 'Escape') {
+            stop();
+        }
+    };
+
+    let stop = () => {
+        isRunning = false;
+        clearInterval(intervalId);
+    };
+
+    let start = (passedCanvas) => {
+        directionChanged = false;
+        isRunning = true;
+
+        canvas = passedCanvas;
+        c = canvas.getContext('2d');
+
+        c.font = '40px VT323, monospace';
+
+        clearInterval(intervalId);
+
+        dashing = false;
+        score = 0;
+        gameOver = false;
+
+        setLayout();
+
+        const cols = Math.floor(playWidth / 20);
+        const rows = Math.floor(playHeight / 20);
+
+        x = playX + Math.floor(cols / 2) * 20;
+        y = playY + Math.floor(rows / 2) * 20;
+
+        direction = 'right';
+
+        body = [
+            { x: x, y: y },
+            { x: x - 20, y: y },
+            { x: x - 40, y: y },
+            { x: x - 60, y: y },
+            { x: x - 80, y: y }
+        ];
+
+        spawnFood();
+        draw();
+
+        intervalId = setInterval(() => {
+            update();
+            draw();
+        }, 150);
+    };
+
     return {
         start,
         onKey,
         stop
     };
 })();
+
 export { snake };
