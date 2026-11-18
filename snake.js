@@ -15,6 +15,7 @@ let y;
 let direction;
 let body = [];
 let isRunning = false;
+let directionChanged;
 
 let draw = () => {
     c.fillStyle = 'black';
@@ -50,6 +51,7 @@ let draw = () => {
 
 let update = () => {
     if (gameOver) return;
+    directionChanged = false;
 
     switch (direction) {
         case 'right':
@@ -93,10 +95,16 @@ let update = () => {
 };
 
 let spawnFood = () => {
+    const minX = 40;
+    const minY = 40;
+
+    const cols = Math.floor((canvas.width - 100) / 20) + 1;
+    const rows = Math.floor((canvas.height - 80) / 20) + 1;
+
     do {
         food = {
-            x: 80 + Math.floor(Math.random() * Math.floor((canvas.width - 180) / 20)) * 20,
-            y: 80 + Math.floor(Math.random() * Math.floor((canvas.height - 160) / 20)) * 20
+            x: minX + Math.floor(Math.random() * cols) * 20,
+            y: minY + Math.floor(Math.random() * rows) * 20
         };
     } while (
         body.some(part =>
@@ -117,20 +125,28 @@ let dash = () => {
 };
 
 let onKey = (eventType, key) => {
+    if (
+        ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(key) &&
+        directionChanged
+    ) return;
     
     
     if (!isRunning) return;
     if (key === 'ArrowDown' && direction !== 'up')
-        direction = 'down';
+        {direction = 'down';
+        directionChanged = true;}
 
     else if (key === 'ArrowUp' && direction !== 'down')
-        direction = 'up';
+        {direction = 'up';
+        directionChanged = true;}
 
     else if (key === 'ArrowLeft' && direction !== 'right')
-        direction = 'left';
+        {direction = 'left';
+        directionChanged = true;}
 
     else if (key === 'ArrowRight' && direction !== 'left')
-        direction = 'right';
+        {direction = 'right';
+        directionChanged = true;}
 
     else if (key.toLowerCase() === 'r' && gameOver) {
         clearInterval(intervalId);
@@ -158,6 +174,7 @@ let stop = () => {
 };
 
 let start = (passedCanvas) => {
+    directionChanged = false;
     isRunning = true;
     canvas = passedCanvas;
     c = canvas.getContext('2d');
