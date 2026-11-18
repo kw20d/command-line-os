@@ -18,7 +18,7 @@ root/
 ├── about/       bio.txt
     └── contact/    github, instagram, youtube, phtotgraphy, mail
 ├── motion/      my motion design videos
-└── programs/    snake, sudoku
+└── programs/    snake, sudoku, camera
 ```
 
 ## Commands
