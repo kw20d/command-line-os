@@ -14,7 +14,7 @@ A command-line "operating system" that doubles as my portfolio. Explore my proje
 
 ```text
 root/
-├── projects/    ascii-camera, neverdolist, zoogle
+├── projects/    ascii-camera, neverdolist,
 ├── about/       bio.txt
     └── contact/    github, instagram, youtube, phtotgraphy, mail
 ├── motion/      my motion design videos
