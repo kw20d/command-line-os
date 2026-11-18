@@ -1,7 +1,5 @@
 ![ZIX-OS](intro.gif)
 
-![ZIX-OS](intro.gif)
-
 # ZIX-OS
 
 A command-line "operating system" that doubles as my portfolio. Explore my projects, motion work and contact info by typing commands, then launch programs directly inside the terminal.
