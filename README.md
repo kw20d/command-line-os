@@ -13,7 +13,6 @@ A command-line "operating system" that doubles as my portfolio. Explore my proje
 ## Examples
 ![cd command](1.gif)
 ![snake game](2.gif)
-![sudoku game](3.gif)
 
 ## What's inside
 
