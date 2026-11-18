@@ -1,4 +1,5 @@
 import { snake } from './snake.js';
+import { sudoku } from './sudoku.js';
 
 const introContainer = document.querySelector('#intro');
 const logoVideo = document.querySelector('#logo-intro');
@@ -101,6 +102,7 @@ let vid4 = addItem(folderNode, gallery, 'endless-hobbies.mp4', 'file',"Type open
 let vid5 = addItem(folderNode, gallery, 'blender-journey.mp4', 'file' ,"Type open blender-journey.mp4 to see", "https://www.instagram.com/p/DXcVHmGRTEy/");
 let games = addItem(folderNode, root, 'games', 'folder');
 let game1 = addItem(folderNode, games, 'snake', 'file', "Type start snake to play it");
+let game2 = addItem(folderNode, games, 'sudoku', 'file', "Type start sudoku to play it");
 
 let wrapText = (text) => {
     if (!text)
@@ -283,6 +285,7 @@ let runningProgram = null;
 
 const programs = {
     snake,
+    sudoku,
 };
 
 canvas.height = window.innerHeight;
