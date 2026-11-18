@@ -97,8 +97,8 @@ let abt2 = addItem(folderNode, about, 'contact', 'folder',)
 let github = addItem(folderNode, abt2, 'github', 'file',"@kw20d Type open github to see" , "https://github.com/kw20d");
 let instagram = addItem(folderNode, abt2, 'instagram', 'file',"@zix9ted Type open instagram to see" , "https://www.instagram.com/zix9ted/");
 let youtube = addItem(folderNode, abt2, 'youtube', 'file',"@zix9ted Type open youtube to see" , "https://www.youtube.com/@zix9ted");
-let mail = addItem(folderNode, abt2, 'mail', 'file',"Type open mail to see" , "https://mail.google.com/mail/u/0/?to=zixcnct@gmail.com&fs=1&tf=cm");
 let photography = addItem(folderNode, abt2, 'photography', 'file',"@zix9can Type open photography to see" , "https://www.instagram.com/zix9cam/");
+let mail = addItem(folderNode, abt2, 'mail', 'file',"Type open mail to see" , "https://mail.google.com/mail/u/0/?to=zixcnct@gmail.com&fs=1&tf=cm");
 let gallery = addItem(folderNode, root, 'motion', 'folder');
 let vid1 = addItem(folderNode, gallery, 'devil-9-5.mp4', 'file',"Type open devil-9-5.mp4 to see" , "https://www.instagram.com/p/DdeVjINoV9V/");
 let vid2 = addItem(folderNode, gallery, 'my-life-in-3d.mp4', 'file',"Type open my-life-in-3d.mp4 to see" , "https://www.instagram.com/p/DYNGmdUx4qj/");
